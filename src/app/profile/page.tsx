@@ -162,7 +162,8 @@ export default function Profile() {
                   <p className="text-[10px] uppercase font-bold text-white/30 mb-2 tracking-[0.2em]">Ritual Balance</p>
                   <div className="flex items-center justify-between">
                     <p className="font-outfit font-bold text-2xl tracking-tight">
-                      {balance?.formatted ? balance.formatted.slice(0, 8) : "0.000"} <span className="text-white/40 text-sm ml-1">{balance?.symbol || "RITUAL"}</span>
+                      {balance?.formatted ? parseFloat(balance.formatted).toLocaleString(undefined, { maximumFractionDigits: 4 }) : "0.000"} 
+                      <span className="text-white/40 text-sm ml-1">{balance?.symbol || "RITUAL"}</span>
                     </p>
                     <RefreshCcw size={14} className="text-white/20 hover:text-white cursor-pointer transition-all" />
                   </div>
