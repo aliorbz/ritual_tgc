@@ -30,15 +30,19 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <ConnectButton />
+          <ConnectButton showBalance={true} chainStatus="none" accountStatus="address" />
           
           {isConnected && (
             <div className="relative">
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group"
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group overflow-hidden"
               >
-                <User size={20} className="text-white/60 group-hover:text-white" />
+                {session?.user?.image ? (
+                  <img src={session.user.image} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User size={20} className="text-white/60 group-hover:text-white" />
+                )}
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-black rounded-full" />
               </button>
 

@@ -122,17 +122,30 @@ export default function Profile() {
           <div className="p-8 rounded-[40px] bg-white/5 border border-white/10 relative overflow-hidden group">
             <div className="relative z-10">
               <div className="flex items-center gap-6 mb-10">
-                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border-2 border-white/10 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border-2 border-white/10 flex items-center justify-center overflow-hidden">
                   {session?.user?.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={session.user.image} alt="Avatar" className="w-full h-full rounded-[22px] object-cover" />
+                    <img src={session.user.image} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     <User size={32} className="text-white/20" />
                   )}
                 </div>
-                <div>
-                  <h2 className="text-3xl font-outfit font-black tracking-tight">{session?.user?.name || "Ritualist"}</h2>
-                  <p className="text-white/40 text-sm font-medium truncate max-w-[150px]">{address}</p>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-2xl font-outfit font-black tracking-tight truncate">
+                    {session?.user?.name || "Ritual Explorer"}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    <p className="text-white/40 text-xs font-mono truncate">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
+                  </div>
+                  {!session && (
+                    <button 
+                      onClick={() => signIn("discord")}
+                      className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/20 hover:bg-[#5865F2]/20 transition-all group"
+                    >
+                      <span className="text-[10px] font-black text-[#5865F2] uppercase tracking-wider">Connect Discord</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -160,21 +173,23 @@ export default function Profile() {
             <div className="absolute -top-20 -right-20 w-48 h-48 bg-purple-600/5 blur-3xl rounded-full" />
           </div>
 
-          <div className="p-8 rounded-[40px] bg-white/5 border border-white/10">
-            <h3 className="font-bold text-lg mb-8 flex items-center gap-2">
-              <Tag size={20} className="text-white/40" /> Performance Stats
-            </h3>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="text-center p-5 rounded-2xl bg-black/20 border border-white/5">
-                <p className="text-3xl font-outfit font-black tracking-tight">{MOCK_OWNED.length}</p>
-                <p className="text-[10px] uppercase font-bold text-white/30 tracking-[0.15em] mt-1">Owned</p>
-              </div>
-              <div className="text-center p-5 rounded-2xl bg-black/20 border border-white/5">
-                <p className="text-3xl font-outfit font-black tracking-tight">0</p>
-                <p className="text-[10px] uppercase font-bold text-white/30 tracking-[0.15em] mt-1">Listed</p>
+          {session && (
+            <div className="p-8 rounded-[40px] bg-white/5 border border-white/10">
+              <h3 className="font-bold text-lg mb-8 flex items-center gap-2">
+                <Tag size={20} className="text-white/40" /> Performance Stats
+              </h3>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="text-center p-5 rounded-2xl bg-black/20 border border-white/5">
+                  <p className="text-3xl font-outfit font-black tracking-tight">{MOCK_OWNED.length}</p>
+                  <p className="text-[10px] uppercase font-bold text-white/30 tracking-[0.15em] mt-1">Owned</p>
+                </div>
+                <div className="text-center p-5 rounded-2xl bg-black/20 border border-white/5">
+                  <p className="text-3xl font-outfit font-black tracking-tight">0</p>
+                  <p className="text-[10px] uppercase font-bold text-white/30 tracking-[0.15em] mt-1">Listed</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Main Content: Tabs & Grid */}
