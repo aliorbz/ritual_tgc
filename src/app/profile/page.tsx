@@ -205,42 +205,9 @@ export default function ProfilePage() {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col lg:flex-row gap-16 items-center w-full max-w-5xl">
-                  <div className="flex-1 space-y-10 order-2 lg:order-1">
-                    <div className="p-8 rounded-[40px] bg-white/5 border border-white/10 space-y-8">
-                      <div>
-                        <p className="text-[10px] uppercase font-bold text-white/30 tracking-[0.2em] mb-4">Identity Details</p>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between py-3 border-b border-white/5">
-                            <span className="text-sm text-white/60">Username</span>
-                            <span className="text-sm font-bold text-white">{session.user?.name}</span>
-                          </div>
-                          <div className="flex items-center justify-between py-3 border-b border-white/5">
-                            <span className="text-sm text-white/60">Discord Role</span>
-                            <span className={`text-sm font-bold ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-white"}`}>
-                              {isRoleLoading ? "Syncing..." : (userData?.role?.name || "Ritualist")}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between py-3 border-b border-white/5">
-                            <span className="text-sm text-white/60">Blockchain Address</span>
-                            <span className="text-sm font-mono text-purple-400">{address?.slice(0, 8)}...</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="pt-4">
-                        <button 
-                          disabled={isRoleLoading}
-                          className="w-full py-5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-[24px] font-black text-lg uppercase tracking-tighter shadow-2xl shadow-purple-500/20 transition-all active:scale-95 flex items-center justify-center gap-3"
-                        >
-                          {isRoleLoading ? "Syncing Roles..." : "Mint Your TCG Card"}
-                        </button>
-                        <p className="text-center text-[10px] text-white/20 mt-4 font-bold uppercase tracking-widest">Only one mint allowed per account</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 order-1 lg:order-2 flex justify-center">
+                <div className="flex flex-col lg:flex-row gap-16 items-center lg:items-start w-full max-w-5xl mt-10">
+                  {/* Left: Card Preview */}
+                  <div className="flex-1 flex justify-center lg:justify-end">
                     <CardPreview 
                       username={session.user?.name || "Ritualist"}
                       avatar={session.user?.image || ""}
@@ -248,6 +215,51 @@ export default function ProfilePage() {
                       walletAddress={address}
                       stats={userData?.stats || { messages: "---", joins: "---", activity: "---" }}
                     />
+                  </div>
+
+                  {/* Right: Typography & Mint Actions */}
+                  <div className="flex-1 flex flex-col justify-center items-center lg:items-start text-center lg:text-left pt-4">
+                    {/* Top Verified Tag */}
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <ShieldCheck size={14} className={(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"} />
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}`}>
+                        Ritual Verified
+                      </span>
+                    </div>
+
+                    {/* Name & Role */}
+                    <div className="flex items-baseline gap-3 mb-4">
+                      <h1 className="text-6xl font-black uppercase tracking-tighter text-white">
+                        {session.user?.name}
+                      </h1>
+                      <span className={`text-2xl font-black lowercase ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}`}>
+                        ({userData?.role?.name || "ritualist"})
+                      </span>
+                    </div>
+
+                    {/* Sub-info */}
+                    <div className="flex items-center gap-4 text-sm font-bold mb-10">
+                      <span className="text-white/40">Discord: <span className={(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}>@{session.user?.name?.toLowerCase().replace(/\s+/g, '')}</span></span>
+                      <span className="text-white/40">Address: <span className={(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}>{address?.slice(0, 6)}...{address?.slice(-4)}</span></span>
+                    </div>
+
+                    {/* Mint Button */}
+                    <button 
+                      disabled={isRoleLoading}
+                      className="w-full max-w-sm py-5 rounded-[20px] font-black text-2xl uppercase tracking-tighter transition-all active:scale-95 flex items-center justify-center gap-3 text-black hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ 
+                        backgroundColor: (ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.primary || "#3b82f6",
+                        boxShadow: `0 10px 30px -10px ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.primary || "#3b82f6"}`
+                      }}
+                    >
+                      {isRoleLoading ? "Syncing..." : "Mint TCG"}
+                    </button>
+
+                    {/* Mint Info */}
+                    <div className="flex items-center gap-6 mt-6 lg:ml-2 text-[10px] font-bold text-white/30 uppercase tracking-widest">
+                      <div>Fee: <span className="text-white/70">0.01 RITUAL</span></div>
+                      <div>Contract: <span className="text-white/70">{RITUAL_NETWORK.contracts.nft.slice(0,6)}...{RITUAL_NETWORK.contracts.nft.slice(-4)}</span></div>
+                    </div>
                   </div>
                 </div>
               )}
