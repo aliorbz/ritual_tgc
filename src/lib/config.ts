@@ -77,25 +77,31 @@ export const ROLE_COLORS = {
 };
 export const CONTRACTS = {
   NFT: {
-    address: "0x83cC6dbe668c7035Ecb8f779F76E7EB344326898",
+    address: "0x8dBd3C09901744BCe47b018d65A8ae5e1031d5F8",
     abi: [
       "function checkHasMinted(string discordId) public view returns (bool)",
-      "function mintCard(address to, string discordId, string discordRole, string discordUsername) public returns (uint256)",
+      "function mintCard(address to, string discordId, string discordRole, string discordUsername) public payable returns (uint256)",
       "function ownerOf(uint256 tokenId) public view returns (address)",
       "function approve(address to, uint256 tokenId) public",
       "function isApprovedForAll(address owner, address operator) public view returns (bool)",
       "function setApprovalForAll(address operator, bool approved) public",
-      "function cardData(uint256 tokenId) public view returns (string, string, string)"
+      "function cardData(uint256 tokenId) public view returns (string, string, string)",
+      "function MINT_FEE() public view returns (uint256)"
     ]
   },
   MARKETPLACE: {
-    address: "0x6922BC7C4711d94cbB6E7fF95D2f69f1639b9195",
+    address: "0x87053Ed6DDCc535629c8AC86Ddc5C2Be8957745d",
     abi: [
       "function listItem(address nftAddress, uint256 tokenId, uint256 price) external payable",
       "function buyItem(uint256 listingId) external payable",
       "function listings(uint256 listingId) public view returns (uint256, address, uint256, address, uint256, bool)",
       "function activeListings(address nftAddress, uint256 tokenId) public view returns (uint256)",
-      "function listingFee() public view returns (uint256)"
+      "function listingFee() public view returns (uint256)",
+      "function makeOffer(address nftAddress, uint256 tokenId) external payable",
+      "function cancelOffer(address nftAddress, uint256 tokenId) external",
+      "function acceptOffer(address nftAddress, uint256 tokenId, address offerer) external",
+      "function offers(address nftAddress, uint256 tokenId, address offerer) public view returns (address, uint256, bool)",
+      "function getOfferers(address nftAddress, uint256 tokenId) external view returns (address[])"
     ]
   }
 };

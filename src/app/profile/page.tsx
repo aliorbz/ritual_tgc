@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { useAccount, useBalance } from "wagmi";
-import { formatEther } from "viem";
+import { useAccount, useBalance, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { formatEther, parseEther } from "viem";
 import { useSession, signIn } from "next-auth/react";
 import { User, Wallet, Grid, PlusCircle, Settings, ExternalLink, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +19,30 @@ export default function ProfilePage() {
   const [isRoleLoading, setIsRoleLoading] = React.useState(false);
   const [customImage, setCustomImage] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Wagmi Write Contract Hook
+  const { data: hash, writeContract, isPending } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+  const handleMint = async () => {
+    if (!address || !userData || !session) return;
+    try {
+      writeContract({
+        address: CONTRACTS.NFT.address as `0x${string}`,
+        abi: CONTRACTS.NFT.abi,
+        functionName: 'mintCard',
+        args: [
+          address,
+          (session as any).user?.id || "",
+          userData.role.name,
+          userData.trueUsername || session.user?.name || "user"
+        ],
+        value: parseEther("0.01"),
+      });
+    } catch (e) {
+      console.error("Minting failed", e);
+    }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -258,14 +282,15 @@ export default function ProfilePage() {
 
                     {/* Mint Button */}
                     <button 
-                      disabled={isRoleLoading}
+                      disabled={isRoleLoading || isPending || isConfirming || isConfirmed}
+                      onClick={handleMint}
                       className="w-full max-w-sm py-5 rounded-[20px] font-black text-2xl uppercase tracking-tighter transition-all active:scale-95 flex items-center justify-center gap-3 text-black hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ 
                         backgroundColor: (ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.primary || "#3b82f6",
                         boxShadow: `0 10px 30px -10px ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.primary || "#3b82f6"}`
                       }}
                     >
-                      {isRoleLoading ? "Syncing..." : "Mint TCG"}
+                      {isRoleLoading ? "Syncing..." : isPending ? "Waiting in Wallet..." : isConfirming ? "Minting on Chain..." : isConfirmed ? "Successfully Minted!" : "Mint TCG"}
                     </button>
 
                     {/* Mint Info */}
