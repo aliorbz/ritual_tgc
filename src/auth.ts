@@ -14,12 +14,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (account && profile) {
         token.accessToken = account.access_token;
         token.userId = profile.id;
+        token.username = profile.username; // Extract Discord username
       }
       return token;
     },
     async session({ session, token }: { session: any, token: any }) {
       session.accessToken = token.accessToken;
-      session.user.id = token.userId;
+      if (session.user) {
+        session.user.id = token.userId;
+        session.user.username = token.username; // Add to session
+      }
       return session;
     },
   },
