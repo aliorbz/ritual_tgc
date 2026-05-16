@@ -6,7 +6,7 @@ import { formatEther } from "viem";
 import { useSession, signIn } from "next-auth/react";
 import { User, Wallet, Grid, PlusCircle, Settings, ExternalLink, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RITUAL_NETWORK, ROLE_COLORS } from "@/lib/config";
+import { RITUAL_NETWORK, ROLE_COLORS, CONTRACTS } from "@/lib/config";
 import { Navbar } from "@/components/Navbar";
 import { CardPreview } from "@/components/CardPreview";
 import { getDiscordUserRoles } from "@/lib/actions";
@@ -258,7 +258,7 @@ export default function ProfilePage() {
                     {/* Mint Info */}
                     <div className="flex items-center gap-6 mt-6 lg:ml-2 text-[10px] font-bold text-white/30 uppercase tracking-widest">
                       <div>Fee: <span className="text-white/70">0.01 RITUAL</span></div>
-                      <div>Contract: <span className="text-white/70">{RITUAL_NETWORK.contracts.nft.slice(0,6)}...{RITUAL_NETWORK.contracts.nft.slice(-4)}</span></div>
+                      <div>Contract: <span className="text-white/70">{CONTRACTS.NFT.address.slice(0,6)}...{CONTRACTS.NFT.address.slice(-4)}</span></div>
                     </div>
                   </div>
                 </div>
