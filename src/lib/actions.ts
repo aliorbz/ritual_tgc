@@ -46,6 +46,7 @@ export async function getDiscordUserRoles() {
 
     const memberData = await memberResponse.json();
     const roles = memberData.roles as string[];
+    const trueUsername = memberData.user?.username || session.user?.name;
 
     // 3. Determine highest role
     const rolePriority = [
@@ -73,6 +74,7 @@ export async function getDiscordUserRoles() {
     return { 
       role: highestRole,
       username: session.user?.name,
+      trueUsername: trueUsername,
       avatar: session.user?.image,
       stats: mockStats[highestRole.type] || mockStats.ritualist
     };
