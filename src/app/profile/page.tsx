@@ -9,11 +9,34 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RITUAL_NETWORK, ROLE_COLORS } from "@/lib/config";
 import { Navbar } from "@/components/Navbar";
 import { CardPreview } from "@/components/CardPreview";
+import { getDiscordUserRoles } from "@/lib/actions";
 
 export default function ProfilePage() {
   const { isConnected, address } = useAccount();
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = React.useState("cards");
+  const [userData, setUserData] = React.useState<any>(null);
+  const [isRoleLoading, setIsRoleLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    async function loadRoles() {
+      if (session) {
+        setIsRoleLoading(true);
+        const data = await getDiscordUserRoles();
+        if (!data.error) {
+          setUserData(data);
+        } else {
+          // Fallback to basic Ritualist if server check fails
+          setUserData({
+            role: { type: "ritualist", name: "Ritualist" },
+            stats: { messages: "0", joins: "---", activity: "New" }
+          });
+        }
+        setIsRoleLoading(false);
+      }
+    }
+    loadRoles();
+  }, [session]);
 
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance({
     address: address,
@@ -83,17 +106,19 @@ export default function ProfilePage() {
               {/* Role Badge */}
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <div 
-                  className="px-3 py-1 rounded-lg border"
+                  className="px-3 py-1 rounded-lg border transition-all"
                   style={{ 
-                    backgroundColor: "rgba(255, 215, 0, 0.1)", 
-                    borderColor: "rgba(255, 215, 0, 0.3)" 
+                    backgroundColor: isRoleLoading ? "rgba(255,255,255,0.05)" : (ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.bg, 
+                    borderColor: isRoleLoading ? "rgba(255,255,255,0.1)" : (ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.border 
                   }}
                 >
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-400">
-                    Radiant Ritualist
+                  <span 
+                    className={`text-[10px] font-black uppercase tracking-[0.2em] ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-white"}`}
+                  >
+                    {isRoleLoading ? "Fetching Role..." : (userData?.role?.name || "Ritualist")}
                   </span>
                 </div>
-                {session && <ShieldCheck className="text-blue-500" size={18} />}
+                {session && !isRoleLoading && <ShieldCheck className="text-blue-500" size={18} />}
               </div>
             </div>
           </div>
@@ -192,7 +217,9 @@ export default function ProfilePage() {
                           </div>
                           <div className="flex items-center justify-between py-3 border-b border-white/5">
                             <span className="text-sm text-white/60">Discord Role</span>
-                            <span className="text-sm font-bold text-yellow-400">Radiant Ritualist</span>
+                            <span className={`text-sm font-bold ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-white"}`}>
+                              {isRoleLoading ? "Syncing..." : (userData?.role?.name || "Ritualist")}
+                            </span>
                           </div>
                           <div className="flex items-center justify-between py-3 border-b border-white/5">
                             <span className="text-sm text-white/60">Blockchain Address</span>
@@ -203,9 +230,10 @@ export default function ProfilePage() {
 
                       <div className="pt-4">
                         <button 
-                          className="w-full py-5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-[24px] font-black text-lg uppercase tracking-tighter shadow-2xl shadow-purple-500/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+                          disabled={isRoleLoading}
+                          className="w-full py-5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-[24px] font-black text-lg uppercase tracking-tighter shadow-2xl shadow-purple-500/20 transition-all active:scale-95 flex items-center justify-center gap-3"
                         >
-                          Mint Your TCG Card
+                          {isRoleLoading ? "Syncing Roles..." : "Mint Your TCG Card"}
                         </button>
                         <p className="text-center text-[10px] text-white/20 mt-4 font-bold uppercase tracking-widest">Only one mint allowed per account</p>
                       </div>
@@ -216,9 +244,9 @@ export default function ProfilePage() {
                     <CardPreview 
                       username={session.user?.name || "Ritualist"}
                       avatar={session.user?.image || ""}
-                      role={{ type: "radiant", name: "Radiant Ritualist" }}
+                      role={userData?.role || { type: "ritualist", name: "Ritualist" }}
                       walletAddress={address}
-                      stats={{ messages: "1.2k", joins: "Mar 2024", activity: "High" }}
+                      stats={userData?.stats || { messages: "---", joins: "---", activity: "---" }}
                     />
                   </div>
                 </div>
