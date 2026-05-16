@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ritual TCG Cards
 
-## Getting Started
+A full-stack Web3 TCG NFT marketplace for the Ritual testnet.
 
-First, run the development server:
+## Setup Instructions
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### 1. Environment Variables
+Create a `.env.local` file in the root directory:
+
+```env
+# NextAuth
+AUTH_SECRET=your_random_secret
+DISCORD_CLIENT_ID=your_discord_client_id
+DISCORD_CLIENT_SECRET=your_discord_client_secret
+
+# Web3
+PRIVATE_KEY=your_wallet_private_key (for deployment)
+NEXT_PUBLIC_WC_PROJECT_ID=your_walletconnect_project_id
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Discord OAuth Setup
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications).
+2. Create a new application.
+3. Under **OAuth2**, add a redirect URI: `http://localhost:3000/api/auth/callback/discord`.
+4. Copy the Client ID and Client Secret to your `.env.local`.
+5. Ensure the `guilds` and `guilds.members.read` scopes are available (you may need to invite your bot to the server with these permissions).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Install Dependencies
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Smart Contracts
+Compile and deploy to Ritual testnet:
 
-## Learn More
+```bash
+npx hardhat compile --config hardhat.config.cjs
+npx hardhat run scripts/deploy.ts --network ritual --config hardhat.config.cjs
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 5. Card Frames
+Place your card frame PNGs in `public/assets/frames/`:
+- `mod.png`
+- `raiden.png`
+- `ritualist.png`
+- `ritty.png`
+- `bitty.png`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 6. Run the App
+```bash
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Features
+- **Discord Integration**: Verifies user roles in the Ritual Discord server.
+- **Role-Based Minting**: Card type is determined by the user's highest role.
+- **Full Marketplace**: List cards, make offers, and buy directly.
+- **Royalties**: 5% marketplace fee on all trades.
+- **Listing Fee**: 0.01 RITUAL for first-time listing.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Mock Mode
+If you don't have a Discord app setup yet, you can test the flow by clicking "use mock data" on the Create Card page.

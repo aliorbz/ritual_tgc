@@ -1,0 +1,50 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_24-ae1f0283f7344ea7ee3d940c724fb4725c66c1a8",
+  "solcVersion": "0.8.24",
+  "solcLongVersion": "0.8.24+commit.e11b9ed9",
+  "compilerType": "solc",
+  "userSourceNameMap": {
+    "contracts/RitualTCGCard.sol": "project/contracts/RitualTCGCard.sol",
+    "contracts/RitualTCGMarketplace.sol": "project/contracts/RitualTCGMarketplace.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "shanghai",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.linkReferences",
+            "evm.bytecode.object",
+            "evm.bytecode.opcodes",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.opcodes",
+            "evm.deployedBytecode.sourceMap",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/RitualTCGCard.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract RitualTCGCard {\n    string public name = \"Ritual TCG Cards\";\n    string public symbol = \"RTCG\";\n    address public owner;\n    uint256 private _nextTokenId;\n    string private _baseTokenURI;\n\n    mapping(uint256 => address) private _owners;\n    mapping(address => uint256) private _balances;\n    mapping(string => bool) public discordIdMinted;\n\n    struct CardMetadata {\n        string discordId;\n        string discordRole;\n        string discordUsername;\n    }\n    mapping(uint256 => CardMetadata) public cardData;\n\n    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);\n\n    constructor(address initialOwner, string memory baseURI) {\n        owner = initialOwner;\n        _baseTokenURI = baseURI;\n    }\n\n    modifier onlyOwner() {\n        require(msg.sender == owner, \"Not owner\");\n        _;\n    }\n\n    function mintCard(\n        address to,\n        string memory discordId,\n        string memory discordRole,\n        string memory discordUsername\n    ) public onlyOwner returns (uint256) {\n        require(!discordIdMinted[discordId], \"Already minted\");\n        \n        uint256 tokenId = _nextTokenId++;\n        _owners[tokenId] = to;\n        _balances[to]++;\n        \n        cardData[tokenId] = CardMetadata({\n            discordId: discordId,\n            discordRole: discordRole,\n            discordUsername: discordUsername\n        });\n\n        discordIdMinted[discordId] = true;\n\n        emit Transfer(address(0), to, tokenId);\n        return tokenId;\n    }\n\n    function ownerOf(uint256 tokenId) public view returns (address) {\n        return _owners[tokenId];\n    }\n\n    function checkHasMinted(string memory discordId) public view returns (bool) {\n        return discordIdMinted[discordId];\n    }\n}\n"
+      },
+      "project/contracts/RitualTCGMarketplace.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ninterface IERC721 {\n    function ownerOf(uint256 tokenId) external view returns (address);\n    function safeTransferFrom(address from, address to, uint256 tokenId) external;\n    function isApprovedForAll(address owner, address operator) external view returns (bool);\n}\n\ncontract RitualTCGMarketplace {\n    uint256 public constant PLATFORM_FEE_PERCENT = 5;\n    uint256 public listingFee = 0.001 ether;\n    address public owner;\n    address public feeReceiver;\n\n    struct Listing {\n        uint256 listingId;\n        address nftAddress;\n        uint256 tokenId;\n        address payable seller;\n        uint256 price;\n        bool active;\n    }\n\n    uint256 private _listingIds;\n    mapping(uint256 => Listing) public listings;\n    mapping(address => mapping(uint256 => uint256)) public activeListings;\n\n    event ItemListed(uint256 indexed listingId, address indexed nftAddress, uint256 indexed tokenId, address seller, uint256 price);\n    event ItemSold(uint256 indexed listingId, address indexed nftAddress, uint256 indexed tokenId, address seller, address buyer, uint256 price);\n\n    constructor(address initialOwner, address _feeReceiver) {\n        owner = initialOwner;\n        feeReceiver = _feeReceiver;\n    }\n\n    function listItem(address nftAddress, uint256 tokenId, uint256 price) external payable {\n        require(msg.value == listingFee, \"Fee\");\n        require(price > 0, \"Price\");\n        require(IERC721(nftAddress).ownerOf(tokenId) == msg.sender, \"Not owner\");\n        require(IERC721(nftAddress).isApprovedForAll(msg.sender, address(this)), \"Not approved\");\n\n        _listingIds++;\n        uint256 listingId = _listingIds;\n\n        listings[listingId] = Listing({\n            listingId: listingId,\n            nftAddress: nftAddress,\n            tokenId: tokenId,\n            seller: payable(msg.sender),\n            price: price,\n            active: true\n        });\n\n        activeListings[nftAddress][tokenId] = listingId;\n\n        (bool success, ) = payable(feeReceiver).call{value: msg.value}(\"\");\n        require(success, \"Fee fail\");\n\n        emit ItemListed(listingId, nftAddress, tokenId, msg.sender, price);\n    }\n\n    function buyItem(uint256 listingId) external payable {\n        Listing storage listing = listings[listingId];\n        require(listing.active && msg.value == listing.price, \"Invalid\");\n\n        listing.active = false;\n        activeListings[listing.nftAddress][listing.tokenId] = 0;\n\n        uint256 platformFee = (msg.value * PLATFORM_FEE_PERCENT) / 100;\n        uint256 sellerProceeds = msg.value - platformFee;\n\n        (bool sellerSuccess, ) = listing.seller.call{value: sellerProceeds}(\"\");\n        require(sellerSuccess, \"Pay fail\");\n\n        (bool feeSuccess, ) = payable(feeReceiver).call{value: platformFee}(\"\");\n        require(feeSuccess, \"Fee fail\");\n\n        IERC721(listing.nftAddress).safeTransferFrom(listing.seller, msg.sender, listing.tokenId);\n\n        emit ItemSold(listingId, listing.nftAddress, listing.tokenId, listing.seller, msg.sender, msg.value);\n    }\n}\n"
+      }
+    }
+  }
+}

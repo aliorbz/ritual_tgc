@@ -1,0 +1,11 @@
+import { ROLE_COLORS } from "./config";
+
+export const getRoleColors = (role: string) => {
+  const r = role.toLowerCase();
+  if (r.includes('mod')) return ROLE_COLORS.mod;
+  if (r.includes('radiant')) return ROLE_COLORS.radiant;
+  if (r.includes('ritualist')) return ROLE_COLORS.ritualist;
+  if (r.includes('ritty')) return ROLE_COLORS.ritty;
+  if (r.includes('bitty')) return ROLE_COLORS.bitty;
+  return ROLE_COLORS.ritualist;
+};
