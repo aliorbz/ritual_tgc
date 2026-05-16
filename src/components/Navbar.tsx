@@ -3,16 +3,27 @@
 import React from "react";
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useDisconnect } from "wagmi";
+import { useAccount, useDisconnect, useBalance } from "wagmi";
+import { formatEther } from "viem";
 import { useSession, signOut } from "next-auth/react";
 import { User, LogOut, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { RITUAL_NETWORK } from "@/lib/config";
 
 export function Navbar() {
   const { isConnected, address } = useAccount();
   const { disconnect } = useDisconnect();
   const { data: session } = useSession();
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+
+  const { data: balanceData, isLoading: isBalanceLoading } = useBalance({
+    address: address,
+    chainId: RITUAL_NETWORK.id,
+  });
+
+  const readableBalance = balanceData 
+    ? parseFloat(formatEther(balanceData.value)).toFixed(4) 
+    : "0.0000";
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-black/60 backdrop-blur-2xl border-b border-white/5">
@@ -30,7 +41,15 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <ConnectButton showBalance={true} chainStatus="none" accountStatus="address" />
+          {isConnected && (
+            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl mr-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+              <span className="text-sm font-bold font-mono text-white/80">
+                {isBalanceLoading ? "..." : `${readableBalance} RITUAL`}
+              </span>
+            </div>
+          )}
+          <ConnectButton showBalance={false} chainStatus="none" accountStatus="address" />
           
           {isConnected && (
             <div className="relative">
