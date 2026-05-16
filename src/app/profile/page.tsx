@@ -17,6 +17,19 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = React.useState("cards");
   const [userData, setUserData] = React.useState<any>(null);
   const [isRoleLoading, setIsRoleLoading] = React.useState(false);
+  const [customImage, setCustomImage] = React.useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCustomImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   React.useEffect(() => {
     async function loadRoles() {
@@ -210,7 +223,7 @@ export default function ProfilePage() {
                   <div className="flex-1 flex justify-center lg:justify-end">
                     <CardPreview 
                       username={session.user?.name || "Ritualist"}
-                      avatar={session.user?.image || ""}
+                      avatar={customImage || session.user?.image || ""}
                       role={userData?.role || { type: "ritualist", name: "Ritualist" }}
                       walletAddress={address}
                       stats={userData?.stats || { messages: "---", joins: "---", activity: "---" }}
@@ -259,6 +272,30 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-6 mt-6 lg:ml-2 text-[10px] font-bold text-white/30 uppercase tracking-widest">
                       <div>Fee: <span className="text-white/70">0.01 RITUAL</span></div>
                       <div>Contract: <span className="text-white/70">{CONTRACTS.NFT.address.slice(0,6)}...{CONTRACTS.NFT.address.slice(-4)}</span></div>
+                    </div>
+
+                    {/* Manual Upload */}
+                    <div className="mt-8 flex flex-col lg:items-start items-center">
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        ref={fileInputRef} 
+                        onChange={handleImageUpload} 
+                        className="hidden" 
+                      />
+                      <p className="text-sm font-bold text-white mb-1">
+                        low image resolution?{" "}
+                        <button 
+                          onClick={() => fileInputRef.current?.click()}
+                          className={`uppercase underline hover:brightness-125 transition-all ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}`}
+                        >
+                          upload
+                        </button>
+                        {" "}manually!
+                      </p>
+                      <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest mt-1">
+                        uploaded image can't be changed afterwards
+                      </p>
                     </div>
                   </div>
                 </div>
