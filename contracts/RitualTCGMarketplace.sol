@@ -39,6 +39,7 @@ contract RitualTCGMarketplace {
 
     event ItemListed(uint256 indexed listingId, address indexed nftAddress, uint256 indexed tokenId, address seller, uint256 price);
     event ItemSold(uint256 indexed listingId, address indexed nftAddress, uint256 indexed tokenId, address seller, address buyer, uint256 price);
+    event ItemCancelled(uint256 indexed listingId, address indexed nftAddress, uint256 indexed tokenId, address seller);
     event OfferMade(address indexed nftAddress, uint256 indexed tokenId, address offerer, uint256 amount);
     event OfferCancelled(address indexed nftAddress, uint256 indexed tokenId, address offerer);
     event OfferAccepted(address indexed nftAddress, uint256 indexed tokenId, address seller, address offerer, uint256 amount);
@@ -68,6 +69,17 @@ contract RitualTCGMarketplace {
         activeListings[nftAddress][tokenId] = listingId;
 
         emit ItemListed(listingId, nftAddress, tokenId, msg.sender, price);
+    }
+
+    function cancelListing(uint256 listingId) external {
+        Listing storage listing = listings[listingId];
+        require(listing.active, "Not active");
+        require(listing.seller == msg.sender, "Not seller");
+
+        listing.active = false;
+        activeListings[listing.nftAddress][listing.tokenId] = 0;
+
+        emit ItemCancelled(listingId, listing.nftAddress, listing.tokenId, msg.sender);
     }
 
     function buyItem(uint256 listingId) external payable {

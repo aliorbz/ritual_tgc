@@ -10,6 +10,7 @@ import { RITUAL_NETWORK, ROLE_COLORS, CONTRACTS } from "@/lib/config";
 import { Navbar } from "@/components/Navbar";
 import { CardPreview } from "@/components/CardPreview";
 import { getDiscordUserRoles } from "@/lib/actions";
+import { CollectedCards } from "@/components/CollectedCards";
 
 export default function ProfilePage() {
   const { isConnected, address } = useAccount();
@@ -202,15 +203,7 @@ export default function ProfilePage() {
         {/* Content Area */}
         <div className="min-h-[400px]">
           {activeTab === "cards" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              <div className="aspect-[3/4] rounded-[32px] border-2 border-dashed border-white/5 bg-white/[0.02] flex flex-col items-center justify-center p-8 text-center group hover:border-white/20 transition-all cursor-pointer">
-                <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <PlusCircle className="text-white/20" size={32} />
-                </div>
-                <h4 className="font-bold mb-2">No Cards Yet</h4>
-                <p className="text-xs text-white/30">Connect Discord to generate your first Ritual TCG card.</p>
-              </div>
-            </div>
+            <CollectedCards />
           )}
 
           {activeTab === "create" && (
