@@ -9,7 +9,6 @@ interface IERC721 {
 
 contract RitualTCGMarketplace {
     uint256 public constant PLATFORM_FEE_PERCENT = 5;
-    uint256 public listingFee = 0.001 ether;
     address public owner;
     address public feeReceiver;
 
@@ -49,8 +48,7 @@ contract RitualTCGMarketplace {
         feeReceiver = _feeReceiver;
     }
 
-    function listItem(address nftAddress, uint256 tokenId, uint256 price) external payable {
-        require(msg.value == listingFee, "Fee");
+    function listItem(address nftAddress, uint256 tokenId, uint256 price) external {
         require(price > 0, "Price");
         require(IERC721(nftAddress).ownerOf(tokenId) == msg.sender, "Not owner");
         require(IERC721(nftAddress).isApprovedForAll(msg.sender, address(this)), "Not approved");
@@ -68,9 +66,6 @@ contract RitualTCGMarketplace {
         });
 
         activeListings[nftAddress][tokenId] = listingId;
-
-        (bool success, ) = payable(feeReceiver).call{value: msg.value}("");
-        require(success, "Fee fail");
 
         emit ItemListed(listingId, nftAddress, tokenId, msg.sender, price);
     }

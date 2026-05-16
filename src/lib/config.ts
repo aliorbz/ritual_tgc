@@ -77,7 +77,7 @@ export const ROLE_COLORS = {
 };
 export const CONTRACTS = {
   NFT: {
-    address: "0x8dBd3C09901744BCe47b018d65A8ae5e1031d5F8",
+    address: "0x0a23Cbc3e3D726cE9E857d3eB5C80358d5a6BA14",
     abi: [
       "function checkHasMinted(string discordId) public view returns (bool)",
       "function mintCard(address to, string discordId, string discordRole, string discordUsername) public payable returns (uint256)",
@@ -90,13 +90,12 @@ export const CONTRACTS = {
     ]
   },
   MARKETPLACE: {
-    address: "0x87053Ed6DDCc535629c8AC86Ddc5C2Be8957745d",
+    address: "0xaAB7c46c1b08bD8Ab397936c3f826b442076FD27",
     abi: [
-      "function listItem(address nftAddress, uint256 tokenId, uint256 price) external payable",
+      "function listItem(address nftAddress, uint256 tokenId, uint256 price) external",
       "function buyItem(uint256 listingId) external payable",
       "function listings(uint256 listingId) public view returns (uint256, address, uint256, address, uint256, bool)",
       "function activeListings(address nftAddress, uint256 tokenId) public view returns (uint256)",
-      "function listingFee() public view returns (uint256)",
       "function makeOffer(address nftAddress, uint256 tokenId) external payable",
       "function cancelOffer(address nftAddress, uint256 tokenId) external",
       "function acceptOffer(address nftAddress, uint256 tokenId, address offerer) external",
