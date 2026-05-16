@@ -239,8 +239,8 @@ export default function ProfilePage() {
 
                     {/* Sub-info */}
                     <div className="flex items-center gap-4 text-sm font-bold mb-10">
-                      <span className="text-white/40">Discord: <span className={(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}>@{session.user?.name?.toLowerCase().replace(/\s+/g, '')}</span></span>
-                      <span className="text-white/40">Address: <span className={(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}>{address?.slice(0, 6)}...{address?.slice(-4)}</span></span>
+                      <span className="text-white/40">Discord: <span className={(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}>@{(session.user?.name || "user").toLowerCase().replace(/\s+/g, '')}</span></span>
+                      <span className="text-white/40">Address: <span className={(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}>{address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "0x..."}</span></span>
                     </div>
 
                     {/* Mint Button */}
