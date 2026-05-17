@@ -300,15 +300,14 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
         </div>
 
         <div className="w-[280px] space-y-2">
-          {/* Token ID badge */}
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-white/30">#{token.tokenId}</span>
-            {isListed && listing && listing.active && (
+          {/* Listing badge */}
+          {isListed && listing && listing.active && (
+            <div className="flex items-center justify-end">
               <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: colors.primary }}>
                 Listed · {formatEther(listing.price)} RITUAL
               </span>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Offers badge */}
           {offerers.length > 0 && (

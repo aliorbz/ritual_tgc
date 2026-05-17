@@ -328,14 +328,44 @@ export default function CardDetails() {
     });
   };
 
-  // ─── Card Image Base64 Upload ─────────────────────────────────────
+  // ─── Card Image Base64 Upload & Canvas Compressor ─────────────────
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setEditImage(reader.result as string);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const max_size = 200; // 200px avatar is extremely crisp for TCG card display
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > max_size) {
+            height *= max_size / width;
+            width = max_size;
+          }
+        } else {
+          if (height > max_size) {
+            width *= max_size / height;
+            height = max_size;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          // 70% quality JPEG is extremely lightweight (~5KB - 10KB) and highly persistent
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+          setEditImage(compressedBase64);
+        }
+      };
+      img.src = reader.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -618,7 +648,7 @@ export default function CardDetails() {
                           { title: "Rarity Tier", val: metadata?.discordRole || "Bitty", glow: true },
                           { title: "Ver. Username", val: `@${metadata?.discordUsername || "user"}` },
                           { title: "Top Server Role", val: metadata?.discordRole || "Bitty" },
-                          { title: "Activity Level", val: metadata?.traits?.activity || "Newbie" }
+                          { title: "Card Ledger ID", val: `#${id}`, glow: true }
                         ].map((item, idx) => (
                           <div key={idx} className="p-4.5 rounded-2xl bg-white/5 border border-white/5 flex flex-col gap-1 hover:border-white/10 transition-all">
                             <span className="text-[9px] font-black uppercase text-white/30 tracking-widest">{item.title}</span>

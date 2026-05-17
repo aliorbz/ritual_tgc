@@ -161,13 +161,43 @@ export default function ProfilePage() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCustomImage(reader.result as string);
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const max_size = 200; // 200px avatar is extremely crisp for TCG card display
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > max_size) {
+            height *= max_size / width;
+            width = max_size;
+          }
+        } else {
+          if (height > max_size) {
+            width *= max_size / height;
+            height = max_size;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          // 70% quality JPEG is extremely lightweight (~5KB - 10KB) and highly persistent
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+          setCustomImage(compressedBase64);
+        }
       };
-      reader.readAsDataURL(file);
-    }
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   // Sync / Fetch roles for session
