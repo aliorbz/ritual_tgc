@@ -5,11 +5,12 @@ import fs from "fs/promises";
 import path from "path";
 import { createPublicClient, http } from "viem";
 import { RITUAL_NETWORK, CONTRACTS } from "@/lib/config";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 // Setup filesystem directory
 const METADATA_DIR = path.join(process.cwd(), "src", "data", "metadata");
 
-// Setup zero-config cloud KV database for Vercel persistence
+// Setup zero-config cloud KV database for secondary persistence fallback
 const BUCKET_ID = "ritual_tcg_metadata_bucket_v1";
 const KV_URL = `https://kvdb.io/${BUCKET_ID}/`;
 
@@ -45,7 +46,24 @@ export async function GET(
   const { id } = await params;
   const filePath = path.join(METADATA_DIR, `${id}.json`);
 
-  // 1. Try to read from cloud KV (Vercel persistent database for everyone)
+  // 1. Try to read from Supabase Database (if configured)
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("tcg_metadata")
+        .select("metadata")
+        .eq("token_id", id)
+        .single();
+        
+      if (!error && data && data.metadata) {
+        return NextResponse.json(data.metadata);
+      }
+    } catch (sbErr) {
+      console.error("Supabase read failed:", sbErr);
+    }
+  }
+
+  // 2. Try to read from cloud KV (secondary persistent fallback)
   try {
     const res = await fetch(`${KV_URL}${id}`, { cache: "no-store" });
     if (res.ok) {
@@ -60,11 +78,11 @@ export async function GET(
 
   try {
     await ensureDirectoryExists();
-    // 2. Try to read from local JSON database (development mode)
+    // 3. Try to read from local JSON database (development mode backup)
     const fileContent = await fs.readFile(filePath, "utf-8");
     return NextResponse.json(JSON.parse(fileContent));
   } catch (err) {
-    // 3. Fallback: Query the blockchain
+    // 4. Fallback: Query the blockchain
     try {
       const client = getViemClient();
       const rawMeta = await client.readContract({
@@ -132,27 +150,80 @@ export async function POST(
 
   try {
     const body = await request.json();
+    let finalBody = { ...body };
 
-    // 1. Sync to cloud KV (Vercel cloud database - persists for everyone globally)
+    // 1. If Supabase is configured and photo contains a base64 data URL, upload to Supabase Storage bucket
+    if (isSupabaseConfigured() && supabase && body.image && body.image.startsWith("data:")) {
+      try {
+        const mimeType = body.image.match(/[^:]\w+\/[\w\-+.]+(?=;base64)/)?.[0] || "image/jpeg";
+        const base64Data = body.image.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        
+        const fileExt = mimeType.split("/")[1] || "jpg";
+        const storagePath = `avatars/${id}.${fileExt}`;
+
+        const { data: uploadData, error: uploadErr } = await supabase.storage
+          .from("tcg_images")
+          .upload(storagePath, buffer, {
+            contentType: mimeType,
+            upsert: true
+          });
+
+        if (uploadErr) {
+          console.error("Supabase Storage bucket upload error:", uploadErr);
+        } else {
+          // Resolve short, lightning-fast CDN public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from("tcg_images")
+            .getPublicUrl(storagePath);
+
+          finalBody.image = publicUrl;
+          finalBody.customImage = publicUrl;
+        }
+      } catch (uploadErr) {
+        console.error("Failed to parse and upload base64 image to Supabase storage:", uploadErr);
+      }
+    }
+
+    // 2. Sync to Supabase Database (if configured)
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        const { error: dbErr } = await supabase
+          .from("tcg_metadata")
+          .upsert({
+            token_id: id,
+            metadata: finalBody,
+            updated_at: new Date().toISOString()
+          });
+
+        if (dbErr) {
+          console.error("Supabase Database table upsert error:", dbErr);
+        }
+      } catch (dbErr) {
+        console.error("Failed to write to Supabase Database:", dbErr);
+      }
+    }
+
+    // 3. Sync to secondary cloud KV (fallback persistence)
     try {
       await fetch(`${KV_URL}${id}`, {
         method: "POST",
-        body: JSON.stringify(body),
+        body: JSON.stringify(finalBody),
         headers: { "Content-Type": "application/json" }
       });
     } catch (kvErr) {
       console.error("Failed to write to cloud KV database:", kvErr);
     }
 
-    // 2. Save locally as fallback (will warning-log on Vercel read-only system without crashing)
+    // 4. Save locally as fallback (will warning-log on Vercel read-only system without crashing)
     try {
       await ensureDirectoryExists();
-      await fs.writeFile(filePath, JSON.stringify(body, null, 2), "utf-8");
+      await fs.writeFile(filePath, JSON.stringify(finalBody, null, 2), "utf-8");
     } catch (fsErr) {
       console.warn("Local filesystem write skipped (Vercel serverless environment):", fsErr);
     }
 
-    return NextResponse.json({ success: true, metadata: body });
+    return NextResponse.json({ success: true, metadata: finalBody });
   } catch (err: any) {
     console.error("Failed to write metadata:", err);
     return NextResponse.json({ error: err.message || "Failed to write metadata" }, { status: 500 });
