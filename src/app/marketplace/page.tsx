@@ -95,14 +95,14 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative group rounded-[32px] overflow-hidden bg-[#0a0a0a]/80 border border-white/5 hover:border-white/20 transition-all duration-500 flex flex-col justify-between"
+      className="relative group rounded-[32px] overflow-hidden bg-[#0a0a0a]/80 border border-white/5 hover:border-white/20 transition-all duration-500"
       style={{ 
         boxShadow: `0 10px 30px -15px ${colors.glow}`,
         backdropFilter: "blur(12px)"
       }}
     >
       {/* Dynamic Card Display */}
-      <Link href={`/card/${card.tokenId}`} className="block p-4 pb-2">
+      <Link href={`/card/${card.tokenId}`} className="block p-4">
         <div className="flex justify-center transition-transform duration-500 group-hover:scale-[1.02]">
           <CardPreview
             tokenId={card.tokenId.toString()}
@@ -115,105 +115,95 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
             stats={card.cardMeta?.traits || { messages: "0", level: "1", activity: "New" }}
           >
             {/* Custom interactive action buttons directly on card face! */}
-            {isOwner ? (
-              card.isListed ? (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onCancelListing(card);
-                  }}
-                  className="w-full py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
-                >
-                  <Trash2 size={12} /> Cancel List
-                </button>
+            <div className="space-y-1.5 w-full">
+              {/* Listed Price Badge directly inside card face */}
+              {card.isListed && card.price && (
+                <div className="text-center bg-black/70 py-1 rounded-lg border border-white/5">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400">
+                    Listed · {formatEther(card.price)} RITUAL
+                  </span>
+                </div>
+              )}
+
+              {isOwner ? (
+                card.isListed ? (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onCancelListing(card);
+                    }}
+                    className="w-full py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
+                  >
+                    <Trash2 size={12} /> Cancel List
+                  </button>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onList(card);
+                    }}
+                    className="w-full py-2.5 rounded-xl border text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:brightness-110"
+                    style={{ 
+                      borderColor: colors.primary, 
+                      backgroundColor: `${colors.primary}1A`, 
+                      color: colors.primary 
+                    }}
+                  >
+                    <Tag size={12} /> List Card
+                  </button>
+                )
               ) : (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onList(card);
-                  }}
-                  className="w-full py-2.5 rounded-xl border text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:brightness-110"
-                  style={{ 
-                    borderColor: colors.primary, 
-                    backgroundColor: `${colors.primary}1A`, 
-                    color: colors.primary 
-                  }}
-                >
-                  <Tag size={12} /> List Card
-                </button>
-              )
-            ) : (
-              card.isListed ? (
-                <div className="flex gap-2 w-full">
+                card.isListed ? (
+                  <div className="flex gap-2 w-full">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onOffer(card);
+                      }}
+                      className="flex-1 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-white/70 hover:text-white transition-all text-[10px] font-black uppercase tracking-wider"
+                    >
+                      Offer
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onBuy(card);
+                      }}
+                      className="flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wider text-black transition-all hover:brightness-110"
+                      style={{ 
+                        backgroundColor: colors.primary,
+                        boxShadow: `0 4px 12px ${colors.glow}`
+                      }}
+                    >
+                      Buy
+                    </button>
+                  </div>
+                ) : (
                   <button
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       onOffer(card);
                     }}
-                    className="flex-1 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-white/70 hover:text-white transition-all text-[10px] font-black uppercase tracking-wider"
-                  >
-                    Offer
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onBuy(card);
-                    }}
-                    className="flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wider text-black transition-all hover:brightness-110"
+                    className="w-full py-2.5 rounded-xl border text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:brightness-110"
                     style={{ 
-                      backgroundColor: colors.primary,
-                      boxShadow: `0 4px 12px ${colors.glow}`
+                      borderColor: colors.primary, 
+                      backgroundColor: `${colors.primary}1A`, 
+                      color: colors.primary 
                     }}
                   >
-                    Buy
+                    Make Offer
                   </button>
-                </div>
-              ) : (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onOffer(card);
-                  }}
-                  className="w-full py-2.5 rounded-xl border text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:brightness-110"
-                  style={{ 
-                    borderColor: colors.primary, 
-                    backgroundColor: `${colors.primary}1A`, 
-                    color: colors.primary 
-                  }}
-                >
-                  Make Offer
-                </button>
-              )
-            )}
+                )
+              )}
+            </div>
           </CardPreview>
         </div>
       </Link>
-
-      {/* Action panel underneath card */}
-      <div className="p-5 border-t border-white/5 bg-black/40">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest">
-              {card.isListed ? "Buy Now Price" : "Market Status"}
-            </p>
-            {card.isListed && card.price ? (
-              <p className="text-white font-black text-xl font-outfit mt-0.5">
-                {formatEther(card.price)} <span className="text-xs font-bold" style={{ color: colors.primary }}>RITUAL</span>
-              </p>
-            ) : (
-              <p className="text-white/40 font-black text-sm mt-0.5">Not Listed</p>
-            )}
-          </div>
-          <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest border border-white/10 px-3 py-1.5 rounded-xl">
-            {isOwner ? "Owner" : card.isListed ? "Active Sale" : "Offer Arena"}
-          </span>
-        </div>
-      </div>
     </motion.div>
   );
 }

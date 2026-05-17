@@ -338,7 +338,7 @@ export default function CardDetails() {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const max_size = 200; // 200px avatar is extremely crisp for TCG card display
+        const max_size = 800; // 800px avatar is extremely sharp for TCG card display
         let width = img.width;
         let height = img.height;
 
@@ -360,8 +360,8 @@ export default function CardDetails() {
         const ctx = canvas.getContext("2d");
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
-          // 70% quality JPEG is extremely lightweight (~5KB - 10KB) and highly persistent
-          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+          // 85% quality JPEG is extremely crisp and high resolution (~20-40KB)
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
           setEditImage(compressedBase64);
         }
       };

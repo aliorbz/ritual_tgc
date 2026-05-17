@@ -295,48 +295,58 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
               walletAddress={address as `0x${string}`}
               tokenId={token.tokenId}
               stats={metadata?.traits || { messages: "0", level: "1", activity: "New" }}
-            />
+            >
+              <div className="space-y-1.5 w-full">
+                {/* Active price badge on card face */}
+                {isListed && listing && listing.active && (
+                  <div className="text-center bg-black/70 py-1 rounded-lg border border-white/5">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400">
+                      Listed · {formatEther(listing.price)} RITUAL
+                    </span>
+                  </div>
+                )}
+                {/* Offers badge on card face */}
+                {offerers.length > 0 && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowOffersModal(true);
+                    }}
+                    className="w-full text-[9px] font-black text-center py-1.5 rounded-xl border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-all uppercase tracking-wider"
+                  >
+                    📨 {offerers.length} Offer{offerers.length > 1 ? "s" : ""}
+                  </button>
+                )}
+                {/* Actions inside card face */}
+                {isListed ? (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleCancelListing();
+                    }}
+                    disabled={isCancelPending || isCancelConfirming}
+                    className="w-full py-2 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[10px] font-black uppercase tracking-wider disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  >
+                    {isCancelPending ? "Waiting..." : isCancelConfirming ? "Removing..." : isCancelConfirmed ? "✅ Removed" : "Remove Listing"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowListModal(true);
+                    }}
+                    className="w-full py-2.5 rounded-xl font-black text-xs text-black transition-all hover:brightness-110 flex items-center justify-center gap-1"
+                    style={{ backgroundColor: colors.primary }}
+                  >
+                    List Card
+                  </button>
+                )}
+              </div>
+            </CardPreview>
           </Link>
-        </div>
-
-        <div className="w-[280px] space-y-2">
-          {/* Listing badge */}
-          {isListed && listing && listing.active && (
-            <div className="flex items-center justify-end">
-              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: colors.primary }}>
-                Listed · {formatEther(listing.price)} RITUAL
-              </span>
-            </div>
-          )}
-
-          {/* Offers badge */}
-          {offerers.length > 0 && (
-            <button
-              onClick={() => setShowOffersModal(true)}
-              className="w-full text-[11px] font-bold text-left px-3 py-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-all"
-            >
-              📨 {offerers.length} Offer{offerers.length > 1 ? "s" : ""} — Tap to view
-            </button>
-          )}
-
-          {/* Actions */}
-          {isListed ? (
-            <button
-              onClick={handleCancelListing}
-              disabled={isCancelPending || isCancelConfirming}
-              className="w-full py-2.5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all text-xs font-black uppercase tracking-wider disabled:opacity-50"
-            >
-              {isCancelPending ? "Waiting..." : isCancelConfirming ? "Cancelling..." : isCancelConfirmed ? "✅ Delisted!" : "Remove Listing"}
-            </button>
-          ) : (
-            <button
-              onClick={() => setShowListModal(true)}
-              className="w-full py-2.5 rounded-xl font-black text-sm text-black transition-all hover:brightness-110"
-              style={{ backgroundColor: colors.primary }}
-            >
-              List for Sale
-            </button>
-          )}
         </div>
       </motion.div>
 
