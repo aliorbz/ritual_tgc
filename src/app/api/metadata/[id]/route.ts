@@ -147,6 +147,15 @@ export async function POST(
 ) {
   const { id } = await params;
   const filePath = path.join(METADATA_DIR, `${id}.json`);
+  
+  let debugInfo: any = {
+    supabaseConfigured: isSupabaseConfigured(),
+    env: {
+      hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      urlPrefix: (process.env.NEXT_PUBLIC_SUPABASE_URL || "").slice(0, 15)
+    }
+  };
 
   try {
     const body = await request.json();
@@ -171,6 +180,7 @@ export async function POST(
 
         if (uploadErr) {
           console.error("Supabase Storage bucket upload error:", uploadErr);
+          debugInfo.storageUploadError = uploadErr;
         } else {
           // Resolve short, lightning-fast CDN public URL
           const { data: { publicUrl } } = supabase.storage
@@ -179,9 +189,12 @@ export async function POST(
 
           finalBody.image = publicUrl;
           finalBody.customImage = publicUrl;
+          debugInfo.storageUploadSuccess = true;
+          debugInfo.publicUrl = publicUrl;
         }
-      } catch (uploadErr) {
+      } catch (uploadErr: any) {
         console.error("Failed to parse and upload base64 image to Supabase storage:", uploadErr);
+        debugInfo.storageException = uploadErr.message || String(uploadErr);
       }
     }
 
@@ -198,9 +211,13 @@ export async function POST(
 
         if (dbErr) {
           console.error("Supabase Database table upsert error:", dbErr);
+          debugInfo.dbUpsertError = dbErr;
+        } else {
+          debugInfo.dbUpsertSuccess = true;
         }
-      } catch (dbErr) {
+      } catch (dbErr: any) {
         console.error("Failed to write to Supabase Database:", dbErr);
+        debugInfo.dbException = dbErr.message || String(dbErr);
       }
     }
 
@@ -211,21 +228,25 @@ export async function POST(
         body: JSON.stringify(finalBody),
         headers: { "Content-Type": "application/json" }
       });
-    } catch (kvErr) {
+      debugInfo.kvSyncSuccess = true;
+    } catch (kvErr: any) {
       console.error("Failed to write to cloud KV database:", kvErr);
+      debugInfo.kvSyncError = kvErr.message || String(kvErr);
     }
 
     // 4. Save locally as fallback (will warning-log on Vercel read-only system without crashing)
     try {
       await ensureDirectoryExists();
       await fs.writeFile(filePath, JSON.stringify(finalBody, null, 2), "utf-8");
-    } catch (fsErr) {
+      debugInfo.localFileSuccess = true;
+    } catch (fsErr: any) {
       console.warn("Local filesystem write skipped (Vercel serverless environment):", fsErr);
+      debugInfo.localFileWarning = fsErr.message || String(fsErr);
     }
 
-    return NextResponse.json({ success: true, metadata: finalBody });
+    return NextResponse.json({ success: true, metadata: finalBody, debug: debugInfo });
   } catch (err: any) {
     console.error("Failed to write metadata:", err);
-    return NextResponse.json({ error: err.message || "Failed to write metadata" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Failed to write metadata", debug: debugInfo }, { status: 500 });
   }
 }
