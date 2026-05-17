@@ -5,9 +5,12 @@ let supabaseUrl = "";
 
 if (supabaseUrlRaw && supabaseUrlRaw !== "mock") {
   try {
-    // Standard URL parser extracts strictly the base domain origin (e.g. https://xxx.supabase.co)
-    // completely discarding trailing slashes, ports, or accidental /rest/v1 sub-paths
-    const parsed = new URL(supabaseUrlRaw);
+    let urlToParse = supabaseUrlRaw;
+    // Automatically prepend protocol if the user pasted a raw domain/path without https://
+    if (!urlToParse.startsWith("http://") && !urlToParse.startsWith("https://")) {
+      urlToParse = "https://" + urlToParse;
+    }
+    const parsed = new URL(urlToParse);
     supabaseUrl = parsed.origin;
   } catch (e) {
     // Fallback if URL parsing fails
