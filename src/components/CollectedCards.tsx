@@ -14,6 +14,17 @@ function ListModal({ tokenId, onClose, onSuccess }: { tokenId: bigint; onClose: 
   const [price, setPrice] = useState("");
   const [step, setStep] = useState<"approve" | "list">("approve");
 
+  const { address } = useAccount();
+
+  // Dynamically check if already approved
+  const { data: isApproved } = useReadContract({
+    address: CONTRACTS.NFT.address,
+    abi: CONTRACTS.NFT.abi,
+    functionName: "isApprovedForAll",
+    args: address ? [address, CONTRACTS.MARKETPLACE.address] : undefined,
+    query: { enabled: !!address },
+  });
+
   const { data: approveHash, writeContract: approve, isPending: isApprovePending } = useWriteContract();
   const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed } = useWaitForTransactionReceipt({ hash: approveHash });
 
@@ -21,8 +32,10 @@ function ListModal({ tokenId, onClose, onSuccess }: { tokenId: bigint; onClose: 
   const { isLoading: isListConfirming, isSuccess: isListConfirmed } = useWaitForTransactionReceipt({ hash: listHash });
 
   useEffect(() => {
-    if (isApproveConfirmed) setStep("list");
-  }, [isApproveConfirmed]);
+    if (isApproved || isApproveConfirmed) {
+      setStep("list");
+    }
+  }, [isApproved, isApproveConfirmed]);
 
   useEffect(() => {
     if (isListConfirmed && onSuccess) onSuccess();

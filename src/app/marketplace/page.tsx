@@ -14,7 +14,8 @@ import {
   Search, 
   SlidersHorizontal, 
   ArrowUpDown,
-  Trash2 
+  Trash2,
+  Hand
 } from "lucide-react";
 import Link from "next/link";
 import { CONTRACTS, ROLE_COLORS, RITUAL_NETWORK } from "@/lib/config";
@@ -196,7 +197,7 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                       color: colors.primary 
                     }}
                   >
-                    Make Offer
+                    <Hand size={12} /> Make Offer
                   </button>
                 )
               )}
@@ -476,41 +477,7 @@ export default function MarketplacePage() {
     try {
       const client = getClient();
 
-      // ── Step 1: Scan listings in parallel ────────────────────────
-      const SCAN_LIMIT = 50; // Probe up to 50 listing IDs in parallel
-      const listingPromises = [];
-      for (let i = 1; i <= SCAN_LIMIT; i++) {
-        listingPromises.push(
-          client.readContract({
-            address: CONTRACTS.MARKETPLACE.address,
-            abi: CONTRACTS.MARKETPLACE.abi,
-            functionName: "listings",
-            args: [BigInt(i)],
-          }).catch(() => null)
-        );
-      }
-      
-      const rawListings = await Promise.all(listingPromises);
-      const activeListings: Listing[] = [];
-
-      for (const raw of rawListings) {
-        if (!raw) continue;
-        const data = raw as { listingId: bigint; nftAddress: string; tokenId: bigint; seller: string; price: bigint; active: boolean };
-        if (data.listingId === BigInt(0) || !data.active) continue;
-
-        activeListings.push({
-          listingId: data.listingId,
-          nftAddress: data.nftAddress,
-          tokenId: data.tokenId,
-          seller: data.seller,
-          price: data.price,
-          active: data.active,
-        });
-      }
-
-      const listedTokenIds = new Set(activeListings.map(l => l.tokenId.toString()));
-
-      // ── Step 2: Fetch all minted cards ───────────────────────────
+      // ── Step 1: Fetch all minted cards total supply ─────────────────
       let totalSupply = 0;
       try {
         const ts = await client.readContract({
@@ -520,11 +487,17 @@ export default function MarketplacePage() {
           args: [],
         }) as bigint;
         totalSupply = Number(ts);
-      } catch (_) {}
+      } catch (err) {
+        console.error("Failed to read total supply", err);
+      }
 
-      const unlistedPromises = [];
+      // ── Step 2: Fetch owners and activeListings in parallel ────────
+      const activeListings: Listing[] = [];
+      const unlisted: MintedCard[] = [];
+
+      const tokenPromises = [];
       for (let i = 0; i < totalSupply; i++) {
-        unlistedPromises.push(
+        tokenPromises.push(
           (async () => {
             try {
               const tokenId = await client.readContract({
@@ -534,8 +507,6 @@ export default function MarketplacePage() {
                 args: [BigInt(i)],
               }) as bigint;
 
-              if (listedTokenIds.has(tokenId.toString())) return null;
-
               const owner = await client.readContract({
                 address: CONTRACTS.NFT.address,
                 abi: CONTRACTS.NFT.abi,
@@ -543,16 +514,50 @@ export default function MarketplacePage() {
                 args: [tokenId],
               }) as string;
 
-              return { tokenId, owner };
-            } catch (_) {
-              return null;
+              // Query marketplace contract for active listing ID of this token
+              const listingId = await client.readContract({
+                address: CONTRACTS.MARKETPLACE.address,
+                abi: CONTRACTS.MARKETPLACE.abi,
+                functionName: "activeListings",
+                args: [CONTRACTS.NFT.address, tokenId],
+              }) as bigint;
+
+              if (listingId > BigInt(0)) {
+                const rawListing = await client.readContract({
+                  address: CONTRACTS.MARKETPLACE.address,
+                  abi: CONTRACTS.MARKETPLACE.abi,
+                  functionName: "listings",
+                  args: [listingId],
+                }) as any;
+
+                const isArray = Array.isArray(rawListing);
+                const seller = isArray ? rawListing[3] : rawListing.seller;
+                const price = isArray ? rawListing[4] : rawListing.price;
+                const active = isArray ? rawListing[5] : rawListing.active;
+
+                if (active) {
+                  activeListings.push({
+                    listingId,
+                    nftAddress: CONTRACTS.NFT.address,
+                    tokenId,
+                    seller,
+                    price,
+                    active,
+                  });
+                  return;
+                }
+              }
+
+              // If it has no active listing, it is unlisted
+              unlisted.push({ tokenId, owner });
+            } catch (err) {
+              console.error(`Failed to fetch state for token index ${i}`, err);
             }
           })()
         );
       }
 
-      const unlistedResults = await Promise.all(unlistedPromises);
-      const unlisted: MintedCard[] = unlistedResults.filter((x): x is MintedCard => x !== null);
+      await Promise.all(tokenPromises);
 
       // ── Step 3: Fetch metadata for all resolved assets in parallel ─
       const fetchListingMeta = activeListings.map(async (listing) => {

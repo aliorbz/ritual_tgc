@@ -64,6 +64,7 @@ export default function CardDetails() {
   const [metadata, setMetadata] = useState<any>(null);
   const [owner, setOwner] = useState<string>("");
   const [isListed, setIsListed] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
   const [listingId, setListingId] = useState<bigint>(BigInt(0));
   const [listingPrice, setListingPrice] = useState<bigint>(BigInt(0));
   const [offersList, setOffersList] = useState<any[]>([]);
@@ -99,6 +100,21 @@ export default function CardDetails() {
         args: [BigInt(id)],
       }) as string;
       setOwner(tokenOwner);
+
+      // Check if approved for marketplace
+      if (address) {
+        try {
+          const approved = await client.readContract({
+            address: CONTRACTS.NFT.address,
+            abi: CONTRACTS.NFT.abi,
+            functionName: "isApprovedForAll",
+            args: [address, CONTRACTS.MARKETPLACE.address],
+          }) as boolean;
+          setIsApproved(approved);
+        } catch (err) {
+          console.error("Failed to check approval", err);
+        }
+      }
 
       // 2. Fetch Active Listing
       const actListingId = await client.readContract({
@@ -231,11 +247,14 @@ export default function CardDetails() {
   useEffect(() => {
     if (isSuccess) {
       loadCardData();
-      setIsListModalOpen(false);
       setIsOfferModalOpen(false);
       setIsEditModalOpen(false);
+      // Only close list modal if the user is already approved (so they just successfully listed/delisted)
+      if (isApproved) {
+        setIsListModalOpen(false);
+      }
     }
-  }, [isSuccess, loadCardData]);
+  }, [isSuccess, loadCardData, isApproved]);
 
   const isOwner = address?.toLowerCase() === owner?.toLowerCase();
   const colors = roleColors(metadata?.discordRole);
@@ -527,16 +546,33 @@ export default function CardDetails() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {isOwner ? (
                       // OWNER ACTIONS
-                      <>
-                        {isListed ? (
+                      isListed ? (
+                        <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <button
                             onClick={handleCancelListing}
                             disabled={isPending || isConfirming}
                             className="py-4 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
                           >
-                            <Trash2 size={18} /> {isPending ? "Waiting..." : isConfirming ? "Confirming..." : "Cancel Listing"}
+                            <Trash2 size={18} /> {isPending ? "Waiting..." : isConfirming ? "Confirming..." : "Remove Listing"}
                           </button>
-                        ) : (
+                          <button
+                            onClick={() => {
+                              setListPrice(formatEther(listingPrice));
+                              setIsListModalOpen(true);
+                            }}
+                            className="py-4 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/20 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                          >
+                            <Tag size={18} /> Change Price
+                          </button>
+                          <button
+                            onClick={handleSyncStats}
+                            className="py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                          >
+                            <RefreshCw size={18} /> Sync Discord Stats
+                          </button>
+                        </div>
+                      ) : (
+                        <>
                           <button
                             onClick={() => setIsListModalOpen(true)}
                             className="py-4 text-black rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-xl hover:brightness-95"
@@ -544,18 +580,18 @@ export default function CardDetails() {
                           >
                             <Tag size={18} /> List Card for Sale
                           </button>
-                        )}
-                        <button
-                          onClick={handleSyncStats}
-                          className="py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
-                        >
-                          <RefreshCw size={18} /> Sync Discord Stats
-                        </button>
-                      </>
+                          <button
+                            onClick={handleSyncStats}
+                            className="py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                          >
+                            <RefreshCw size={18} /> Sync Discord Stats
+                          </button>
+                        </>
+                      )
                     ) : (
                       // BUYER/OFFEROR ACTIONS
-                      <>
-                        {isListed && (
+                      isListed ? (
+                        <div className="col-span-1 sm:col-span-2 grid grid-cols-2 gap-4">
                           <button 
                             onClick={handleBuy}
                             disabled={isPending || isConfirming}
@@ -567,25 +603,44 @@ export default function CardDetails() {
                           >
                             <ShoppingCart size={18} /> {isPending ? "Waiting..." : isConfirming ? "Confirming..." : "Buy Now"}
                           </button>
-                        )}
-                        
-                        {userHasActiveOffer ? (
-                          <button
-                            onClick={handleCancelOffer}
-                            disabled={isPending || isConfirming}
-                            className="py-4 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                          >
-                            <X size={18} /> {isPending ? "Waiting..." : isConfirming ? "Confirming..." : "Cancel My Bid"}
-                          </button>
-                        ) : (
-                          <button 
-                            onClick={() => setIsOfferModalOpen(true)}
-                            className="py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
-                          >
-                            <Hand size={18} /> Place Escrow Bid
-                          </button>
-                        )}
-                      </>
+                          
+                          {userHasActiveOffer ? (
+                            <button
+                              onClick={handleCancelOffer}
+                              disabled={isPending || isConfirming}
+                              className="py-4 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                              <X size={18} /> {isPending ? "Waiting..." : isConfirming ? "Confirming..." : "Cancel My Bid"}
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => setIsOfferModalOpen(true)}
+                              className="py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                            >
+                              <Hand size={18} /> Make Offer
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="col-span-1 sm:col-span-2">
+                          {userHasActiveOffer ? (
+                            <button
+                              onClick={handleCancelOffer}
+                              disabled={isPending || isConfirming}
+                              className="w-full py-4 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                              <X size={18} /> {isPending ? "Waiting..." : isConfirming ? "Confirming..." : "Cancel My Bid"}
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => setIsOfferModalOpen(true)}
+                              className="w-full py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                            >
+                              <Hand size={18} /> Make Offer
+                            </button>
+                          )}
+                        </div>
+                      )
                     )}
                   </div>
                 </div>
@@ -781,7 +836,15 @@ export default function CardDetails() {
                 disabled={isPending || isConfirming || !listPrice || parseFloat(listPrice) <= 0}
                 className="w-full py-4 rounded-2xl font-black text-lg bg-white text-black hover:bg-white/90 transition-all disabled:opacity-50"
               >
-                {isPending ? "Waiting..." : isConfirming ? "Confirming..." : "Confirm Listing"}
+                {isPending ? (
+                  "Waiting in Wallet..."
+                ) : isConfirming ? (
+                  "Confirming on Chain..."
+                ) : !isApproved ? (
+                  "Approve Marketplace First"
+                ) : (
+                  "Confirm Listing"
+                )}
               </button>
             </motion.div>
           </div>
