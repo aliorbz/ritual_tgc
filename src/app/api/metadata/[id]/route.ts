@@ -7,6 +7,10 @@ import { RITUAL_NETWORK, CONTRACTS } from "@/lib/config";
 // Setup filesystem directory
 const METADATA_DIR = path.join(process.cwd(), "src", "data", "metadata");
 
+// Setup zero-config cloud KV database for Vercel persistence
+const BUCKET_ID = "ritual_tcg_metadata_bucket_v1";
+const KV_URL = `https://kvdb.io/${BUCKET_ID}/`;
+
 // Setup viem public client for dynamic on-chain fallback
 const RITUAL_CHAIN = {
   id: RITUAL_NETWORK.id,
@@ -39,13 +43,26 @@ export async function GET(
   const { id } = await params;
   const filePath = path.join(METADATA_DIR, `${id}.json`);
 
+  // 1. Try to read from cloud KV (Vercel persistent database for everyone)
+  try {
+    const res = await fetch(`${KV_URL}${id}`, { cache: "no-store" });
+    if (res.ok) {
+      const val = await res.json();
+      if (val && typeof val === "object" && val.name) {
+        return NextResponse.json(val);
+      }
+    }
+  } catch (kvErr) {
+    console.error("Cloud KV read failed:", kvErr);
+  }
+
   try {
     await ensureDirectoryExists();
-    // 1. Try to read from local JSON database
+    // 2. Try to read from local JSON database (development mode)
     const fileContent = await fs.readFile(filePath, "utf-8");
     return NextResponse.json(JSON.parse(fileContent));
   } catch (err) {
-    // 2. Fallback: Query the blockchain
+    // 3. Fallback: Query the blockchain
     try {
       const client = getViemClient();
       const rawMeta = await client.readContract({
@@ -113,11 +130,25 @@ export async function POST(
 
   try {
     const body = await request.json();
-    await ensureDirectoryExists();
 
-    // In a production system, we would check standard signatures,
-    // but in this local dev environment, we trust the POST payload
-    await fs.writeFile(filePath, JSON.stringify(body, null, 2), "utf-8");
+    // 1. Sync to cloud KV (Vercel cloud database - persists for everyone globally)
+    try {
+      await fetch(`${KV_URL}${id}`, {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: { "Content-Type": "application/json" }
+      });
+    } catch (kvErr) {
+      console.error("Failed to write to cloud KV database:", kvErr);
+    }
+
+    // 2. Save locally as fallback (will warning-log on Vercel read-only system without crashing)
+    try {
+      await ensureDirectoryExists();
+      await fs.writeFile(filePath, JSON.stringify(body, null, 2), "utf-8");
+    } catch (fsErr) {
+      console.warn("Local filesystem write skipped (Vercel serverless environment):", fsErr);
+    }
 
     return NextResponse.json({ success: true, metadata: body });
   } catch (err: any) {
