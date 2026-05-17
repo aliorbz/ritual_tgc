@@ -129,7 +129,7 @@ export default function CardDetails() {
 
       // 3. Fetch Local metadata
       try {
-        const res = await fetch(`/api/metadata/${id}`);
+        const res = await fetch(`/api/metadata/${id}?t=${Date.now()}`);
         if (res.ok) {
           const meta = await res.json();
           setMetadata(meta);

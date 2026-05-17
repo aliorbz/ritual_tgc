@@ -567,7 +567,7 @@ export default function MarketplacePage() {
       // ── Step 3: Fetch metadata for all resolved assets in parallel ─
       const fetchListingMeta = activeListings.map(async (listing) => {
         try {
-          const res = await fetch(`/api/metadata/${listing.tokenId}`);
+          const res = await fetch(`/api/metadata/${listing.tokenId}?t=${Date.now()}`);
           if (res.ok) {
             const meta = await res.json();
             listing.cardMeta = {
@@ -603,7 +603,7 @@ export default function MarketplacePage() {
 
       const fetchUnlistedMeta = unlisted.map(async (card) => {
         try {
-          const res = await fetch(`/api/metadata/${card.tokenId}`);
+          const res = await fetch(`/api/metadata/${card.tokenId}?t=${Date.now()}`);
           if (res.ok) {
             const meta = await res.json();
             card.cardMeta = {

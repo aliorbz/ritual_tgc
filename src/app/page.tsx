@@ -74,7 +74,7 @@ export default function Home() {
           // Fetch local JSON metadata
           let cardMeta: CardMeta | undefined;
           try {
-            const res = await fetch(`/api/metadata/${data.tokenId}`);
+            const res = await fetch(`/api/metadata/${data.tokenId}?t=${Date.now()}`);
             if (res.ok) {
               const meta = await res.json();
               cardMeta = {

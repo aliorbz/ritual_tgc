@@ -66,64 +66,26 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
         {/* Dynamic Card Shimmer effect */}
         <div className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-[linear-gradient(105deg,transparent_30%,rgba(255,255,255,0.08)_40%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.08)_60%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer_2.5s_infinite_linear]" />
 
-        {/* ── CARD HEADER ── */}
-        <div className="relative z-20 flex items-center justify-between w-full">
-          {/* Token ID Badge */}
-          <div className="px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center">
-            <span className="text-[10px] font-mono font-black text-white/70">
-              #{tokenId ? tokenId : "PREVIEW"}
-            </span>
-          </div>
-
-          {/* Rarity/Role Badge */}
-          <div 
-            className="px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-wider bg-black/60 backdrop-blur-md"
-            style={{ 
-              borderColor: colors.primary,
-              color: colors.primary,
-              boxShadow: `0 0 10px ${colors.glow}`
-            }}
+        {/* ── CARD HEADER (Name Only) ── */}
+        <div className="relative z-20 w-full text-center bg-black/40 backdrop-blur-sm py-2 px-3 rounded-2xl border border-white/5">
+          <h3 
+            className="text-base font-black uppercase tracking-wider truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+            style={{ color: colors.primary }}
           >
-            {role?.name || "Ritualist"}
-          </div>
+            {username || "Ritualist"}
+          </h3>
+          {walletAddress && (
+            <p className="text-[8px] font-mono font-bold text-white/40 truncate uppercase mt-0.5 tracking-tight">
+              {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+            </p>
+          )}
         </div>
 
-        {/* ── CARD FOOTER ── */}
-        <div className="relative z-20 w-full flex flex-col gap-2.5">
-          {/* User Name Tag */}
-          <div className="w-full text-center">
-            <h3 
-              className="text-lg font-black uppercase tracking-tighter truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-              style={{ color: colors.primary }}
-            >
-              {username || "Ritualist"}
-            </h3>
-            {walletAddress && (
-              <p className="text-[9px] font-mono font-bold text-white/30 truncate uppercase mt-0.5">
-                {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-              </p>
-            )}
-          </div>
-
-          {/* Player Stats / Buttons Dashboard */}
-          {children ? (
+        {/* ── CARD FOOTER (Action Buttons Only) ── */}
+        <div className="relative z-20 w-full">
+          {children && (
             <div className="relative z-30 w-full">
               {children}
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-1 bg-black/60 backdrop-blur-md rounded-2xl border border-white/10 p-2 text-center">
-              <div>
-                <p className="text-[8px] font-black text-white/40 uppercase tracking-wider">MSG</p>
-                <p className="text-xs font-bold text-white mt-0.5 font-mono">{messages}</p>
-              </div>
-              <div className="border-x border-white/5">
-                <p className="text-[8px] font-black text-white/40 uppercase tracking-wider">LVL</p>
-                <p className="text-xs font-bold text-white mt-0.5 font-mono">{level}</p>
-              </div>
-              <div>
-                <p className="text-[8px] font-black text-white/40 uppercase tracking-wider">ACTIVE</p>
-                <p className="text-xs font-bold text-white mt-0.5 font-mono truncate">{activity}</p>
-              </div>
             </div>
           )}
         </div>

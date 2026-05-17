@@ -210,7 +210,7 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
   useEffect(() => {
     async function fetchLocalMeta() {
       try {
-        const res = await fetch(`/api/metadata/${token.tokenId}`);
+        const res = await fetch(`/api/metadata/${token.tokenId}?t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           setMetadata(data);
