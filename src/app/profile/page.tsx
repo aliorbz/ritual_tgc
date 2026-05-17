@@ -301,29 +301,19 @@ export default function ProfilePage() {
           {/* Connect / Disconnect Buttons */}
           <div className="flex items-center gap-3">
             {!activeSession ? (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleLaunchMock("ritualist")}
-                  className="px-5 py-3 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 text-purple-400 rounded-xl font-bold transition-all text-xs flex items-center gap-2"
-                >
-                  <Sparkles size={14} /> Dev Simulator
-                </button>
-                <button
-                  onClick={() => signIn("discord")}
-                  className="px-6 py-3 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-xl font-black transition-all text-sm flex items-center gap-2 shadow-lg shadow-blue-500/10"
-                >
-                  Connect Discord
-                </button>
-              </div>
+              <button
+                onClick={() => signIn("discord")}
+                className="px-6 py-3 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-xl font-black transition-all text-sm flex items-center gap-2 shadow-lg shadow-blue-500/10"
+              >
+                Connect Discord
+              </button>
             ) : (
-              mockSession && (
-                <button
-                  onClick={handleDisconnectMock}
-                  className="px-5 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-xl font-bold transition-all text-xs flex items-center gap-2"
-                >
-                  <LogOut size={14} /> Disconnect Simulator
-                </button>
-              )
+              <button
+                onClick={() => signOut()}
+                className="px-5 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-xl font-bold transition-all text-xs flex items-center gap-2"
+              >
+                <LogOut size={14} /> Disconnect
+              </button>
             )}
             <button className="p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all">
               <Settings size={20} className="text-white/60" />
