@@ -13,7 +13,8 @@ import {
   Package, 
   Search, 
   SlidersHorizontal, 
-  ArrowUpDown 
+  ArrowUpDown,
+  Trash2 
 } from "lucide-react";
 import Link from "next/link";
 import { CONTRACTS, ROLE_COLORS, RITUAL_NETWORK } from "@/lib/config";
@@ -68,15 +69,27 @@ function roleColors(role?: string) {
   return (ROLE_COLORS as any)[roleType] || ROLE_COLORS.ritualist;
 }
 
-// ─── Listed Card Component ──────────────────────────────────────────
-function ListingCard({ listing, onBuy, onOffer, currentAddress }: {
-  listing: Listing;
-  onBuy: (listing: Listing) => void;
-  onOffer: (listing: Listing) => void;
+// ─── MarketCard Type ────────────────────────────────────────────────
+type MarketCard = {
+  tokenId: bigint;
+  owner: string;
+  isListed: boolean;
+  listingId?: bigint;
+  price?: bigint;
+  cardMeta?: CardMeta;
+};
+
+// ─── Unified Market Card Component ──────────────────────────────────
+function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, currentAddress }: {
+  card: MarketCard;
+  onBuy: (card: MarketCard) => void;
+  onOffer: (card: MarketCard) => void;
+  onList: (card: MarketCard) => void;
+  onCancelListing: (card: MarketCard) => void;
   currentAddress?: string;
 }) {
-  const colors = roleColors(listing.cardMeta?.discordRole);
-  const isSelf = currentAddress?.toLowerCase() === listing.seller.toLowerCase();
+  const colors = roleColors(card.cardMeta?.discordRole);
+  const isOwner = currentAddress?.toLowerCase() === card.owner.toLowerCase();
 
   return (
     <motion.div
@@ -87,75 +100,6 @@ function ListingCard({ listing, onBuy, onOffer, currentAddress }: {
         boxShadow: `0 10px 30px -15px ${colors.glow}`,
         backdropFilter: "blur(12px)"
       }}
-    >
-      {/* Dynamic Card Display */}
-      <Link href={`/card/${listing.tokenId}`} className="block p-4 pb-2">
-        <div className="flex justify-center transition-transform duration-500 group-hover:scale-[1.02]">
-          <CardPreview
-            tokenId={listing.tokenId.toString()}
-            role={{ 
-              type: listing.cardMeta?.discordRole || "ritualist", 
-              name: listing.cardMeta?.discordRole || "Ritualist" 
-            }}
-            username={listing.cardMeta?.discordUsername || "Ritualist"}
-            avatar={listing.cardMeta?.image || ""}
-            stats={listing.cardMeta?.traits || { messages: "0", level: "1", activity: "New" }}
-          />
-        </div>
-      </Link>
-
-      {/* Action panel */}
-      <div className="p-5 border-t border-white/5 bg-black/40">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest">Buy Now Price</p>
-            <p className="text-white font-black text-xl font-outfit mt-0.5">
-              {formatEther(listing.price)} <span className="text-xs font-bold" style={{ color: colors.primary }}>RITUAL</span>
-            </p>
-          </div>
-          {isSelf ? (
-            <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest border border-white/10 px-3 py-2 rounded-xl">Your Listing</span>
-          ) : (
-            <div className="flex gap-2">
-              <button
-                onClick={() => onOffer(listing)}
-                className="px-3 py-2 rounded-xl border border-white/10 hover:border-white/30 text-white/60 hover:text-white transition-all text-xs font-black"
-              >
-                Offer
-              </button>
-              <button
-                onClick={() => onBuy(listing)}
-                className="px-4 py-2 rounded-xl font-black text-sm text-black hover:brightness-110 transition-all shadow-lg"
-                style={{ 
-                  backgroundColor: colors.primary,
-                  boxShadow: `0 4px 15px -3px ${colors.glow}`
-                }}
-              >
-                Buy
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── Unlisted Card Component ────────────────────────────────────────
-function UnlistedCard({ card, onOffer, currentAddress }: {
-  card: MintedCard;
-  onOffer: (card: MintedCard) => void;
-  currentAddress?: string;
-}) {
-  const colors = roleColors(card.cardMeta?.discordRole);
-  const isOwner = currentAddress?.toLowerCase() === card.owner.toLowerCase();
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="relative group rounded-[32px] overflow-hidden bg-[#0a0a0a]/80 border border-white/5 hover:border-white/15 transition-all duration-500 flex flex-col justify-between"
-      style={{ backdropFilter: "blur(12px)" }}
     >
       {/* Dynamic Card Display */}
       <Link href={`/card/${card.tokenId}`} className="block p-4 pb-2">
@@ -169,27 +113,105 @@ function UnlistedCard({ card, onOffer, currentAddress }: {
             username={card.cardMeta?.discordUsername || "Ritualist"}
             avatar={card.cardMeta?.image || ""}
             stats={card.cardMeta?.traits || { messages: "0", level: "1", activity: "New" }}
-          />
+          >
+            {/* Custom interactive action buttons directly on card face! */}
+            {isOwner ? (
+              card.isListed ? (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onCancelListing(card);
+                  }}
+                  className="w-full py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
+                >
+                  <Trash2 size={12} /> Cancel List
+                </button>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onList(card);
+                  }}
+                  className="w-full py-2.5 rounded-xl border text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:brightness-110"
+                  style={{ 
+                    borderColor: colors.primary, 
+                    backgroundColor: `${colors.primary}1A`, 
+                    color: colors.primary 
+                  }}
+                >
+                  <Tag size={12} /> List Card
+                </button>
+              )
+            ) : (
+              card.isListed ? (
+                <div className="flex gap-2 w-full">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onOffer(card);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-white/70 hover:text-white transition-all text-[10px] font-black uppercase tracking-wider"
+                  >
+                    Offer
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onBuy(card);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wider text-black transition-all hover:brightness-110"
+                    style={{ 
+                      backgroundColor: colors.primary,
+                      boxShadow: `0 4px 12px ${colors.glow}`
+                    }}
+                  >
+                    Buy
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onOffer(card);
+                  }}
+                  className="w-full py-2.5 rounded-xl border text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:brightness-110"
+                  style={{ 
+                    borderColor: colors.primary, 
+                    backgroundColor: `${colors.primary}1A`, 
+                    color: colors.primary 
+                  }}
+                >
+                  Make Offer
+                </button>
+              )
+            )}
+          </CardPreview>
         </div>
       </Link>
 
-      {/* Action panel */}
+      {/* Action panel underneath card */}
       <div className="p-5 border-t border-white/5 bg-black/40">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest">Market Status</p>
-            <p className="text-white/40 font-black text-sm mt-0.5">Not Listed</p>
+            <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest">
+              {card.isListed ? "Buy Now Price" : "Market Status"}
+            </p>
+            {card.isListed && card.price ? (
+              <p className="text-white font-black text-xl font-outfit mt-0.5">
+                {formatEther(card.price)} <span className="text-xs font-bold" style={{ color: colors.primary }}>RITUAL</span>
+              </p>
+            ) : (
+              <p className="text-white/40 font-black text-sm mt-0.5">Not Listed</p>
+            )}
           </div>
-          {isOwner ? (
-            <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest border border-white/10 px-3 py-2 rounded-xl">Your Card</span>
-          ) : (
-            <button
-              onClick={() => onOffer(card)}
-              className="px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/30 text-white/80 hover:text-white transition-all text-xs font-black"
-            >
-              Make Offer
-            </button>
-          )}
+          <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest border border-white/10 px-3 py-1.5 rounded-xl">
+            {isOwner ? "Owner" : card.isListed ? "Active Sale" : "Offer Arena"}
+          </span>
         </div>
       </div>
     </motion.div>
@@ -197,7 +219,7 @@ function UnlistedCard({ card, onOffer, currentAddress }: {
 }
 
 // ─── Buy Modal Component ───────────────────────────────────────────
-function BuyModal({ listing, onClose, onSuccess }: { listing: Listing; onClose: () => void; onSuccess?: () => void }) {
+function BuyModal({ card, onClose, onSuccess }: { card: MarketCard; onClose: () => void; onSuccess?: () => void }) {
   const { data: hash, writeContract, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
@@ -206,17 +228,18 @@ function BuyModal({ listing, onClose, onSuccess }: { listing: Listing; onClose: 
   }, [isSuccess, onSuccess]);
 
   const handleBuy = () => {
+    if (!card.listingId) return;
     writeContract({
       address: CONTRACTS.MARKETPLACE.address,
       abi: CONTRACTS.MARKETPLACE.abi,
       functionName: "buyItem",
-      args: [listing.listingId],
-      value: listing.price,
+      args: [card.listingId],
+      value: card.price || BigInt(0),
     });
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 font-sans">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -225,17 +248,17 @@ function BuyModal({ listing, onClose, onSuccess }: { listing: Listing; onClose: 
         <button onClick={onClose} className="absolute top-6 right-6 text-white/40 hover:text-white"><X size={20} /></button>
         <ShoppingCart className="text-purple-400 mb-4" size={32} />
         <h3 className="text-2xl font-black font-outfit mb-2">Confirm Purchase</h3>
-        <p className="text-white/50 text-sm mb-6">
-          You are buying <strong className="text-white">Card #{listing.tokenId.toString()}</strong> from{" "}
-          <strong className="text-white">@{listing.cardMeta?.discordUsername || "Unknown"}</strong>.
+        <p className="text-white/50 text-sm mb-6 leading-relaxed">
+          You are buying <strong className="text-white">Card #{card.tokenId.toString()}</strong> from{" "}
+          <strong className="text-white">@{card.cardMeta?.discordUsername || "Unknown"}</strong>.
         </p>
 
-        <div className="bg-white/5 rounded-2xl p-4 mb-6 flex justify-between items-center border border-white/5">
-          <span className="text-white/40 text-sm font-bold">You pay</span>
-          <span className="text-white font-black text-xl font-outfit">{formatEther(listing.price)} RITUAL</span>
+        <div className="bg-white/5 rounded-2xl p-4 mb-6 flex justify-between items-center border border-white/5 font-mono">
+          <span className="text-white/40 text-sm font-bold font-sans">You pay</span>
+          <span className="text-white font-black text-xl font-outfit">{formatEther(card.price || BigInt(0))} RITUAL</span>
         </div>
 
-        <div className="text-[10px] text-white/30 font-bold mb-6 flex items-center gap-2">
+        <div className="text-[10px] text-white/30 font-bold mb-6 flex items-center gap-2 font-sans">
           <AlertTriangle size={12} className="text-yellow-500" />
           Seller receives 95% · 5% platform fee
         </div>
@@ -251,7 +274,7 @@ function BuyModal({ listing, onClose, onSuccess }: { listing: Listing; onClose: 
             disabled={isPending || isConfirming}
             className="w-full py-4 rounded-2xl font-black text-lg bg-white text-black hover:bg-white/90 transition-all disabled:opacity-50"
           >
-            {isPending ? "Waiting in Wallet..." : isConfirming ? "Confirming..." : `Buy for ${formatEther(listing.price)} RITUAL`}
+            {isPending ? "Waiting in Wallet..." : isConfirming ? "Confirming..." : `Buy for ${formatEther(card.price || BigInt(0))} RITUAL`}
           </button>
         )}
       </motion.div>
@@ -260,9 +283,7 @@ function BuyModal({ listing, onClose, onSuccess }: { listing: Listing; onClose: 
 }
 
 // ─── Offer Modal Component ──────────────────────────────────────────
-type OfferTarget = { tokenId: bigint; discordUsername?: string };
-
-function OfferModal({ target, onClose, onSuccess }: { target: OfferTarget; onClose: () => void; onSuccess?: () => void }) {
+function OfferModal({ card, onClose, onSuccess }: { card: MarketCard; onClose: () => void; onSuccess?: () => void }) {
   const [offerAmount, setOfferAmount] = useState("");
   const { data: hash, writeContract, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -277,7 +298,7 @@ function OfferModal({ target, onClose, onSuccess }: { target: OfferTarget; onClo
       address: CONTRACTS.MARKETPLACE.address,
       abi: CONTRACTS.MARKETPLACE.abi,
       functionName: "makeOffer",
-      args: [CONTRACTS.NFT.address, target.tokenId],
+      args: [CONTRACTS.NFT.address, card.tokenId],
       value: parseEther(offerAmount),
     });
   };
@@ -285,7 +306,7 @@ function OfferModal({ target, onClose, onSuccess }: { target: OfferTarget; onClo
   const errMsg = error ? ((error as any)?.shortMessage || error?.message) : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 font-sans">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -295,8 +316,8 @@ function OfferModal({ target, onClose, onSuccess }: { target: OfferTarget; onClo
         <Tag className="text-purple-400 mb-4" size={32} />
         <h3 className="text-2xl font-black font-outfit mb-2">Make an Offer</h3>
         <p className="text-white/50 text-sm mb-6 leading-relaxed">
-          For <strong className="text-white">Card #{target.tokenId.toString()}</strong>
-          {target.discordUsername ? <> owned by <strong className="text-white">@{target.discordUsername}</strong></> : null}.
+          For <strong className="text-white">Card #{card.tokenId.toString()}</strong>
+          {card.cardMeta?.discordUsername ? <> owned by <strong className="text-white">@{card.cardMeta.discordUsername}</strong></> : null}.
           Your RITUAL will be escrowed safely in the marketplace contract until accepted or cancelled.
         </p>
 
@@ -308,7 +329,7 @@ function OfferModal({ target, onClose, onSuccess }: { target: OfferTarget; onClo
             placeholder="0.00"
             value={offerAmount}
             onChange={e => setOfferAmount(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white font-black text-xl focus:outline-none focus:border-white/30 transition-all font-outfit"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white font-black text-xl focus:outline-none focus:border-white/30 transition-all font-outfit font-mono"
           />
           <span className="absolute right-5 top-1/2 -translate-y-1/2 text-white/30 font-bold text-sm">RITUAL</span>
         </div>
@@ -339,6 +360,94 @@ function OfferModal({ target, onClose, onSuccess }: { target: OfferTarget; onClo
   );
 }
 
+// ─── List Modal Component ──────────────────────────────────────────
+function ListModal({ card, onClose, onSuccess }: { card: MarketCard; onClose: () => void; onSuccess?: () => void }) {
+  const [price, setPrice] = useState("");
+  const { data: hash, writeContract, isPending } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  useEffect(() => {
+    if (isSuccess && onSuccess) onSuccess();
+  }, [isSuccess, onSuccess]);
+
+  const handleList = async () => {
+    if (!price || parseFloat(price) <= 0) return;
+    try {
+      const client = getClient();
+      // Check if approved first
+      const isApproved = await client.readContract({
+        address: CONTRACTS.NFT.address,
+        abi: CONTRACTS.NFT.abi,
+        functionName: "isApprovedForAll",
+        args: [card.owner as `0x${string}`, CONTRACTS.MARKETPLACE.address],
+      }) as boolean;
+
+      if (!isApproved) {
+        writeContract({
+          address: CONTRACTS.NFT.address,
+          abi: CONTRACTS.NFT.abi,
+          functionName: "setApprovalForAll",
+          args: [CONTRACTS.MARKETPLACE.address, true],
+        });
+      } else {
+        writeContract({
+          address: CONTRACTS.MARKETPLACE.address,
+          abi: CONTRACTS.MARKETPLACE.abi,
+          functionName: "listItem",
+          args: [CONTRACTS.NFT.address, card.tokenId, parseEther(price)],
+        });
+      }
+    } catch (e) {
+      console.error("Listing failed", e);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 font-sans">
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-[#0b0b0b] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl"
+      >
+        <button onClick={onClose} className="absolute top-6 right-6 text-white/40 hover:text-white"><X size={20} /></button>
+        <Tag className="text-purple-400 mb-4" size={32} />
+        <h3 className="text-2xl font-black font-outfit mb-2">Sell Card</h3>
+        <p className="text-white/50 text-sm mb-6 leading-relaxed">
+          Set your selling price for <strong className="text-white">Card #{card.tokenId.toString()}</strong>. Listing requires marketplace permission and signature.
+        </p>
+
+        <div className="relative mb-6">
+          <input
+            type="number"
+            min="0"
+            step="0.001"
+            placeholder="0.00"
+            value={price}
+            onChange={e => setPrice(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white font-black text-xl focus:outline-none focus:border-white/30 transition-all font-outfit font-mono"
+          />
+          <span className="absolute right-5 top-1/2 -translate-y-1/2 text-white/30 font-bold text-sm font-sans">RITUAL</span>
+        </div>
+
+        {isSuccess ? (
+          <div className="text-center py-4">
+            <p className="text-green-400 font-black text-lg">🎉 Card Listed Successfully!</p>
+            <button onClick={onClose} className="mt-4 text-white/50 text-sm hover:text-white font-bold">Close</button>
+          </div>
+        ) : (
+          <button
+            onClick={handleList}
+            disabled={isPending || isConfirming || !price || parseFloat(price) <= 0}
+            className="w-full py-4 rounded-2xl font-black text-lg bg-white text-black hover:bg-white/90 transition-all disabled:opacity-50"
+          >
+            {isPending ? "Waiting in Wallet..." : isConfirming ? "Confirming..." : "Confirm Listing"}
+          </button>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
 // ─── Main Marketplace Page ──────────────────────────────────────────
 export default function MarketplacePage() {
   const { address } = useAccount();
@@ -347,8 +456,9 @@ export default function MarketplacePage() {
   const [unlistedCards, setUnlistedCards] = useState<MintedCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [selectedBuy, setSelectedBuy] = useState<Listing | null>(null);
-  const [selectedOffer, setSelectedOffer] = useState<OfferTarget | null>(null);
+  const [selectedBuy, setSelectedBuy] = useState<MarketCard | null>(null);
+  const [selectedOffer, setSelectedOffer] = useState<MarketCard | null>(null);
+  const [selectedList, setSelectedList] = useState<MarketCard | null>(null);
 
   // Search & Filter controls
   const [search, setSearch] = useState("");
@@ -356,6 +466,20 @@ export default function MarketplacePage() {
   const [sort, setSort] = useState("recent");
 
   const roles = ["All", "Mod", "Radiant", "Ritualist", "Ritty", "Bitty"];
+
+  // Delisting write hook
+  const { data: cancelHash, writeContract: cancelListingContract, isPending: isCancelPending } = useWriteContract();
+  const { isLoading: isCancelConfirming, isSuccess: isCancelConfirmed } = useWaitForTransactionReceipt({ hash: cancelHash });
+
+  const handleCancelListing = (card: MarketCard) => {
+    if (!card.listingId) return;
+    cancelListingContract({
+      address: CONTRACTS.MARKETPLACE.address,
+      abi: CONTRACTS.MARKETPLACE.abi,
+      functionName: "cancelListing",
+      args: [card.listingId],
+    });
+  };
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -526,9 +650,42 @@ export default function MarketplacePage() {
     fetchData();
   }, [fetchData]);
 
-  // Filtering & Sorting function
-  const filterAndSortCards = <T extends { tokenId: bigint; cardMeta?: CardMeta; price?: bigint }>(items: T[]) => {
-    return items
+  useEffect(() => {
+    if (isCancelConfirmed) {
+      fetchData();
+    }
+  }, [isCancelConfirmed, fetchData]);
+
+  // Combine listings and unlisted cards into a single unified array
+  const combinedCards = React.useMemo<MarketCard[]>(() => {
+    const list: MarketCard[] = [];
+
+    for (const l of listings) {
+      list.push({
+        tokenId: l.tokenId,
+        owner: l.seller,
+        isListed: true,
+        listingId: l.listingId,
+        price: l.price,
+        cardMeta: l.cardMeta,
+      });
+    }
+
+    for (const u of unlistedCards) {
+      list.push({
+        tokenId: u.tokenId,
+        owner: u.owner,
+        isListed: false,
+        cardMeta: u.cardMeta,
+      });
+    }
+
+    return list;
+  }, [listings, unlistedCards]);
+
+  // Filter & Sort unified array
+  const filteredCards = React.useMemo(() => {
+    return combinedCards
       .filter(item => {
         const meta = item.cardMeta;
         const name = meta?.discordUsername || "";
@@ -551,21 +708,22 @@ export default function MarketplacePage() {
         if (sort === "id") {
           return Number(a.tokenId - b.tokenId);
         }
-        if (sort === "price_asc" && a.price !== undefined && b.price !== undefined) {
-          return Number(a.price - b.price);
+        if (sort === "price_asc") {
+          const pA = a.isListed && a.price !== undefined ? a.price : parseEther("999999");
+          const pB = b.isListed && b.price !== undefined ? b.price : parseEther("999999");
+          return Number(pA - pB);
         }
-        if (sort === "price_desc" && a.price !== undefined && b.price !== undefined) {
-          return Number(b.price - a.price);
+        if (sort === "price_desc") {
+          const pA = a.isListed && a.price !== undefined ? a.price : BigInt(0);
+          const pB = b.isListed && b.price !== undefined ? b.price : BigInt(0);
+          return Number(pB - pA);
         }
-        // recent
+        // default recent: tokenId desc
         return Number(b.tokenId - a.tokenId);
       });
-  };
+  }, [combinedCards, search, filter, sort]);
 
-  const filteredListings = filterAndSortCards(listings);
-  const filteredUnlisted = filterAndSortCards(unlistedCards);
-
-  const totalMinted = listings.length + unlistedCards.length;
+  const totalMinted = combinedCards.length;
 
   return (
     <main className="min-h-screen bg-[#080808] text-white font-['Outfit',sans-serif]">
@@ -664,60 +822,31 @@ export default function MarketplacePage() {
           </div>
         ) : (
           <div className="space-y-16">
-            {/* ── Active Listings Section ──────────────────────────── */}
             <div>
               <div className="flex items-center gap-4 mb-8">
-                <h2 className="text-3xl font-black uppercase tracking-tight">Active Listings</h2>
+                <h2 className="text-3xl font-black uppercase tracking-tight">TCG Card Arena</h2>
                 <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-white/40 font-sans">
-                  {filteredListings.length} listing{filteredListings.length !== 1 ? "s" : ""}
+                  {filteredCards.length} card{filteredCards.length !== 1 ? "s" : ""}
                 </span>
               </div>
 
-              {filteredListings.length > 0 ? (
+              {filteredCards.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                  {filteredListings.map((listing) => (
-                    <ListingCard
-                      key={listing.listingId.toString()}
-                      listing={listing}
-                      onBuy={setSelectedBuy}
-                      onOffer={(l) => setSelectedOffer({ tokenId: l.tokenId, discordUsername: l.cardMeta?.discordUsername })}
-                      currentAddress={address}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="py-20 text-center rounded-[32px] border border-white/5 bg-white/[0.01] text-white/30 text-sm font-bold">
-                  No active listings match your filters.
-                </div>
-              )}
-            </div>
-
-            {/* ── Unlisted Cards Section ───────────────────────────── */}
-            <div>
-              <div className="flex flex-col gap-2 mb-8">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-3xl font-black uppercase tracking-tight">Escrow Bidding Arena</h2>
-                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-white/40 font-sans">
-                    {filteredUnlisted.length} unlisted
-                  </span>
-                </div>
-                <p className="text-white/40 text-sm font-sans">These cards are owned but not currently listed for direct sale. You can still make bids on them.</p>
-              </div>
-
-              {filteredUnlisted.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                  {filteredUnlisted.map((card) => (
-                    <UnlistedCard
-                      key={card.tokenId.toString()}
+                  {filteredCards.map((card) => (
+                    <MarketCardItem
+                      key={`${card.isListed ? "listed" : "unlisted"}-${card.tokenId.toString()}`}
                       card={card}
-                      onOffer={(c) => setSelectedOffer({ tokenId: c.tokenId, discordUsername: c.cardMeta?.discordUsername })}
+                      onBuy={setSelectedBuy}
+                      onOffer={setSelectedOffer}
+                      onList={setSelectedList}
+                      onCancelListing={handleCancelListing}
                       currentAddress={address}
                     />
                   ))}
                 </div>
               ) : (
                 <div className="py-20 text-center rounded-[32px] border border-white/5 bg-white/[0.01] text-white/30 text-sm font-bold">
-                  No unlisted cards match your filters.
+                  No cards match your current filters.
                 </div>
               )}
             </div>
@@ -725,20 +854,35 @@ export default function MarketplacePage() {
         )}
       </div>
 
+      {/* Delisting Loader Overlay */}
+      {isCancelConfirming && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/85 backdrop-blur-md">
+          <Loader2 className="animate-spin text-purple-500 mb-4" size={48} />
+          <p className="text-white/60 font-bold uppercase tracking-widest text-xs font-sans">Cancelling On-chain Listing...</p>
+        </div>
+      )}
+
       {/* Dynamic Modals */}
       <AnimatePresence>
         {selectedBuy && (
           <BuyModal
-            listing={selectedBuy}
+            card={selectedBuy}
             onClose={() => setSelectedBuy(null)}
             onSuccess={() => { setSelectedBuy(null); fetchData(); }}
           />
         )}
         {selectedOffer && (
           <OfferModal
-            target={selectedOffer}
+            card={selectedOffer}
             onClose={() => setSelectedOffer(null)}
             onSuccess={() => { setSelectedOffer(null); }}
+          />
+        )}
+        {selectedList && (
+          <ListModal
+            card={selectedList}
+            onClose={() => setSelectedList(null)}
+            onSuccess={() => { setSelectedList(null); fetchData(); }}
           />
         )}
       </AnimatePresence>

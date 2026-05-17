@@ -11,9 +11,10 @@ interface CardPreviewProps {
   stats?: { messages: string, joins: string, activity: string };
   walletAddress?: string;
   tokenId?: string;
+  children?: React.ReactNode;
 }
 
-export function CardPreview({ role, username, avatar, stats, walletAddress, tokenId }: CardPreviewProps) {
+export function CardPreview({ role, username, avatar, stats, walletAddress, tokenId, children }: CardPreviewProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const roleType = (role?.type || "ritualist").toLowerCase();
   const colors = (ROLE_COLORS as any)[roleType] || ROLE_COLORS.ritualist;
@@ -104,21 +105,27 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
             )}
           </div>
 
-          {/* Player Stats Dashboard */}
-          <div className="grid grid-cols-3 gap-1 bg-black/60 backdrop-blur-md rounded-2xl border border-white/10 p-2 text-center">
-            <div>
-              <p className="text-[8px] font-black text-white/40 uppercase tracking-wider">MSG</p>
-              <p className="text-xs font-bold text-white mt-0.5 font-mono">{messages}</p>
+          {/* Player Stats / Buttons Dashboard */}
+          {children ? (
+            <div className="relative z-30 w-full">
+              {children}
             </div>
-            <div className="border-x border-white/5">
-              <p className="text-[8px] font-black text-white/40 uppercase tracking-wider">LVL</p>
-              <p className="text-xs font-bold text-white mt-0.5 font-mono">{level}</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-1 bg-black/60 backdrop-blur-md rounded-2xl border border-white/10 p-2 text-center">
+              <div>
+                <p className="text-[8px] font-black text-white/40 uppercase tracking-wider">MSG</p>
+                <p className="text-xs font-bold text-white mt-0.5 font-mono">{messages}</p>
+              </div>
+              <div className="border-x border-white/5">
+                <p className="text-[8px] font-black text-white/40 uppercase tracking-wider">LVL</p>
+                <p className="text-xs font-bold text-white mt-0.5 font-mono">{level}</p>
+              </div>
+              <div>
+                <p className="text-[8px] font-black text-white/40 uppercase tracking-wider">ACTIVE</p>
+                <p className="text-xs font-bold text-white mt-0.5 font-mono truncate">{activity}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[8px] font-black text-white/40 uppercase tracking-wider">ACTIVE</p>
-              <p className="text-xs font-bold text-white mt-0.5 font-mono truncate">{activity}</p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

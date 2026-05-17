@@ -346,7 +346,7 @@ export default function CardDetails() {
       name: editName,
       description: editDescription,
       image: editImage,
-      customImage: editImage.startsWith("data:") ? editImage : null
+      customImage: (editImage || "").startsWith("data:") ? editImage : null
     };
 
     try {
@@ -384,9 +384,9 @@ export default function CardDetails() {
     };
 
     setMetadata(updatedPayload);
-    setEditName(metadata.name);
-    setEditDescription(metadata.description);
-    setEditImage(metadata.image);
+    setEditName(updatedPayload.name || "");
+    setEditDescription(updatedPayload.description || "");
+    setEditImage(updatedPayload.image || "");
   };
 
   const userHasActiveOffer = offersList.some(o => o.offerer.toLowerCase() === address?.toLowerCase());
@@ -462,7 +462,7 @@ export default function CardDetails() {
                   <div className="flex items-center gap-2">
                     <span className="text-white/30 uppercase">Card Owner</span>
                     <span className="font-mono bg-white/5 border border-white/5 px-2.5 py-1 rounded-lg" style={{ color: colors.primary }}>
-                      {owner.slice(0, 8)}...{owner.slice(-6)}
+                      {(owner || "").slice(0, 8)}...{(owner || "").slice(-6)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -701,7 +701,7 @@ export default function CardDetails() {
                                 <Tag size={14} style={{ color: colors.primary }} /> LISTED
                               </td>
                               <td className="px-6 py-4">{formatEther(listingPrice)} RITUAL</td>
-                              <td className="px-6 py-4 text-purple-400">{owner.slice(0, 6)}...{owner.slice(-4)}</td>
+                              <td className="px-6 py-4 text-purple-400">{(owner || "").slice(0, 6)}...{(owner || "").slice(-4)}</td>
                               <td className="px-6 py-4 text-white/30">MARKETPLACE</td>
                             </tr>
                           )}
@@ -711,7 +711,7 @@ export default function CardDetails() {
                             </td>
                             <td className="px-6 py-4">0.01 RITUAL</td>
                             <td className="px-6 py-4 text-white/30">0x0000...0000</td>
-                            <td className="px-6 py-4 text-purple-400">{owner.slice(0, 6)}...{owner.slice(-4)}</td>
+                            <td className="px-6 py-4 text-purple-400">{(owner || "").slice(0, 6)}...{(owner || "").slice(-4)}</td>
                           </tr>
                         </tbody>
                       </table>
