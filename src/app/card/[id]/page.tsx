@@ -372,6 +372,7 @@ export default function CardDetails() {
 
   // ─── Local JSON database Save ─────────────────────────────────────
   const handleSaveMetadata = async () => {
+    console.log("handleSaveMetadata triggered!");
     const updatedPayload = {
       ...metadata,
       name: editName,
@@ -380,22 +381,37 @@ export default function CardDetails() {
       customImage: (editImage || "").startsWith("data:") ? editImage : null
     };
 
+    console.log("Payload to be sent:", {
+      name: updatedPayload.name,
+      description: updatedPayload.description,
+      imageLength: (updatedPayload.image || "").length,
+      imageIsBase64: (updatedPayload.image || "").startsWith("data:")
+    });
+
     try {
+      console.log(`Sending POST fetch request to /api/metadata/${id}...`);
       const res = await fetch(`/api/metadata/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedPayload),
       });
 
+      console.log(`Fetch response received. HTTP status: ${res.status}`);
+      const jsonRes = await res.json();
+      console.log("Server response payload:", jsonRes);
+
       if (res.ok) {
+        console.log("Save successful! Closing modal and reloading card...");
         setMetadata(updatedPayload);
         setIsEditModalOpen(false);
         loadCardData();
       } else {
-        alert("Failed to save metadata to server.");
+        console.error("Save metadata returned a non-OK status:", res.status);
+        alert(`Failed to save metadata to server. Error code: ${res.status}`);
       }
-    } catch (err) {
-      console.error("Save metadata error", err);
+    } catch (err: any) {
+      console.error("Critical error during handleSaveMetadata fetch execution:", err);
+      alert(`An error occurred while saving: ${err.message || String(err)}`);
     }
   };
 
