@@ -188,8 +188,8 @@ export default function Home() {
             },
             {
               icon: <Shield className="text-blue-400" size={26} />,
-              title: "Platform-Royalty Free",
-              description: "Secured by zero-fee smart contracts. All marketplace listings and bid negotiations are gas-only, maximizing profit for creators."
+              title: "Transparent 5% Royalty",
+              description: "Secured by robust smart contracts. Only a small 5% platform royalty is taken on successful marketplace sales, maximizing profit for creators."
             },
             {
               icon: <Flame className="text-yellow-400" size={26} />,

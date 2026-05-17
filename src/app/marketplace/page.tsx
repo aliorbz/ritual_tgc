@@ -734,7 +734,7 @@ export default function MarketplacePage() {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-[11px] font-bold text-white/30 uppercase tracking-widest font-sans">
               <span>5% Royalty fee</span>
               <span>·</span>
-              <span>Gasless transactions</span>
+              <span>Secure Escrow Bids</span>
               <span>·</span>
               {!isLoading && <span>{totalMinted} dynamic card{totalMinted !== 1 ? "s" : ""} minted</span>}
               <span>·</span>

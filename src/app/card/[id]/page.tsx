@@ -820,7 +820,7 @@ export default function CardDetails() {
               <Tag className="text-purple-400 mb-4" size={32} />
               <h3 className="text-2xl font-black font-outfit mb-2">Sell Card</h3>
               <p className="text-white/50 text-sm mb-6">
-                Input your selling price for <strong className="text-white">Card #{id}</strong>. Listing is gas-only and requires a one-time marketplace approval transaction.
+                Input your selling price for <strong className="text-white">Card #{id}</strong>. A 5% platform royalty is applied to successful sales. Listing requires a one-time marketplace approval.
               </p>
 
               <div className="relative mb-6">
