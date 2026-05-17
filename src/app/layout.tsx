@@ -20,25 +20,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${outfit.variable} font-sans bg-[#050505] text-white min-h-screen selection:bg-purple-500/30`}>
+      <body className={`${inter.variable} ${outfit.variable} font-sans bg-[#121212] text-white min-h-screen selection:bg-green-500/30`}>
         <DiscordProvider>
           <Web3Provider>
             <div className="relative flex flex-col min-h-screen overflow-x-hidden">
               {/* Background Glows */}
               <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1]">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/20 blur-[120px] rounded-full" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-900/20 blur-[120px] rounded-full" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-green-900/20 blur-[120px] rounded-full" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-900/20 blur-[120px] rounded-full" />
               </div>
               
               <Navbar />
-              <main className="flex-grow pt-20">
+              <main className="flex-grow pt-0">
                 {children}
               </main>
               
-              <footer className="border-t border-white/5 py-10 bg-black/40 backdrop-blur-md">
+              <footer className="border-t border-white/5 py-10 bg-[#0d0d0d] backdrop-blur-md">
                 <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center font-bold">R</div>
+                    <img src="/ritual.jpg" alt="Ritual Logo" className="w-8 h-8 rounded-lg object-cover" />
                     <span className="font-outfit font-bold text-xl">Ritual TCG</span>
                   </div>
                   <p className="text-white/40 text-sm">© 2026 Ritual TCG Cards. Built for Ritual Testnet.</p>

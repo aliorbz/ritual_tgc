@@ -28,22 +28,22 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-black/60 backdrop-blur-2xl border-b border-white/5">
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
+        <Link href="/" className="flex items-center gap-3 group">
           <motion.div 
             whileHover={{ rotate: 10, scale: 1.05 }}
-            className="w-11 h-11 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center font-black text-xl shadow-xl shadow-purple-500/20"
+            className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center font-black text-xl shadow-xl shadow-emerald-500/10 overflow-hidden"
           >
-            R
+            <img src="/ritual.jpg" alt="Ritual Logo" className="w-full h-full object-cover" />
           </motion.div>
           <span className="font-outfit font-black text-2xl tracking-tighter hidden sm:block uppercase">
-            Ritual <span className="text-purple-500">TCG</span>
+            Ritual <span className="text-emerald-500">TCG</span>
           </span>
         </Link>
 
         <div className="flex items-center gap-3">
           {isConnected && (
             <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl mr-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-sm font-bold font-mono text-white/80">
                 {isBalanceLoading ? "..." : `${readableBalance} RITUAL`}
               </span>

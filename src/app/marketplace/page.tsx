@@ -234,10 +234,10 @@ function BuyModal({ card, onClose, onSuccess }: { card: MarketCard; onClose: () 
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-[#0b0b0b] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl"
+        className="bg-[#121212] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl"
       >
         <button onClick={onClose} className="absolute top-6 right-6 text-white/40 hover:text-white"><X size={20} /></button>
-        <ShoppingCart className="text-purple-400 mb-4" size={32} />
+        <ShoppingCart className="text-emerald-400 mb-4" size={32} />
         <h3 className="text-2xl font-black font-outfit mb-2">Confirm Purchase</h3>
         <p className="text-white/50 text-sm mb-6 leading-relaxed">
           You are buying <strong className="text-white">Card #{card.tokenId.toString()}</strong> from{" "}
@@ -301,10 +301,10 @@ function OfferModal({ card, onClose, onSuccess }: { card: MarketCard; onClose: (
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-[#0b0b0b] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl"
+        className="bg-[#121212] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl"
       >
         <button onClick={onClose} className="absolute top-6 right-6 text-white/40 hover:text-white"><X size={20} /></button>
-        <Tag className="text-purple-400 mb-4" size={32} />
+        <Tag className="text-emerald-400 mb-4" size={32} />
         <h3 className="text-2xl font-black font-outfit mb-2">Make an Offer</h3>
         <p className="text-white/50 text-sm mb-6 leading-relaxed">
           For <strong className="text-white">Card #{card.tokenId.toString()}</strong>
@@ -398,10 +398,10 @@ function ListModal({ card, onClose, onSuccess }: { card: MarketCard; onClose: ()
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-[#0b0b0b] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl"
+        className="bg-[#121212] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl"
       >
         <button onClick={onClose} className="absolute top-6 right-6 text-white/40 hover:text-white"><X size={20} /></button>
-        <Tag className="text-purple-400 mb-4" size={32} />
+        <Tag className="text-emerald-400 mb-4" size={32} />
         <h3 className="text-2xl font-black font-outfit mb-2">Sell Card</h3>
         <p className="text-white/50 text-sm mb-6 leading-relaxed">
           Set your selling price for <strong className="text-white">Card #{card.tokenId.toString()}</strong>. Listing requires marketplace permission and signature.
@@ -721,13 +721,13 @@ export default function MarketplacePage() {
   const totalMinted = combinedCards.length;
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white font-['Outfit',sans-serif]">
+    <main className="min-h-screen bg-[#121212] text-white font-['Outfit',sans-serif]">
       <Navbar />
-      <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
+      <div className="max-w-7xl mx-auto px-6 pt-28 pb-20">
         {/* Header */}
         <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <span className="px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold tracking-widest mb-3 inline-block uppercase font-sans">
+            <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest mb-3 inline-block uppercase font-sans">
               Ritual TCG Trading Arena
             </span>
             <h1 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter text-white">Marketplace</h1>
@@ -737,67 +737,37 @@ export default function MarketplacePage() {
               <span>Secure Escrow Bids</span>
               <span>·</span>
               {!isLoading && <span>{totalMinted} dynamic card{totalMinted !== 1 ? "s" : ""} minted</span>}
-              <span>·</span>
-              <span className="text-purple-400/80 font-mono lowercase tracking-normal">{CONTRACTS.MARKETPLACE.address}</span>
             </div>
           </div>
         </div>
 
-        {/* Dynamic Search, Filter, Sort Controls Panel */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 p-6 rounded-[32px] bg-white/5 border border-white/10 backdrop-blur-md mb-12">
-          <div className="flex flex-col sm:flex-row items-center gap-4 flex-1">
+        {/* Dynamic Search and Filter Controls Panel */}
+        <div className="flex flex-col lg:flex-row lg:items-center gap-6 p-6 rounded-[32px] bg-white/5 border border-white/10 backdrop-blur-md mb-12">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
             <div className="relative w-full sm:max-w-md group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-purple-400 transition-colors" size={20} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors" size={20} />
               <input 
                 type="text" 
                 placeholder="Search by name, ID, or role..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-black/40 border border-white/5 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all font-sans"
+                className="w-full bg-black/40 border border-white/5 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-sans"
               />
             </div>
             
-            {/* Dynamic HSL Glowing Role Filter Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide w-full sm:w-auto font-sans">
-              {roles.map(role => {
-                const colors = roleColors(role);
-                const isActive = filter === role;
-                
-                return (
-                  <button
-                    key={role}
-                    onClick={() => setFilter(role)}
-                    className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap border ${
-                      isActive 
-                      ? "text-white shadow-lg" 
-                      : "bg-white/5 text-white/40 border-transparent hover:bg-white/10"
-                    }`}
-                    style={{ 
-                      backgroundColor: isActive ? colors.primary : undefined,
-                      borderColor: isActive ? colors.primary : undefined,
-                      boxShadow: isActive ? `0 10px 20px -5px ${colors.glow}` : undefined
-                    }}
-                  >
-                    {role}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Sort Controls */}
-          <div className="flex items-center gap-3 self-end lg:self-auto font-sans">
-            <div className="relative flex items-center bg-black/40 border border-white/5 rounded-2xl px-4 py-3 gap-2">
-              <ArrowUpDown size={16} className="text-white/40" />
+            {/* Role Filter Dropdown */}
+            <div className="relative flex items-center bg-black/40 border border-white/5 rounded-2xl px-4 py-3.5 gap-2 font-sans w-full sm:w-auto">
+              <SlidersHorizontal size={16} className="text-white/40" />
               <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="bg-transparent text-sm font-bold text-white focus:outline-none cursor-pointer pr-1"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="bg-transparent text-sm font-bold text-white focus:outline-none cursor-pointer pr-1 uppercase tracking-wider"
               >
-                <option value="recent" className="bg-[#111]">Recently Minted</option>
-                <option value="price_asc" className="bg-[#111]">Price: Low to High</option>
-                <option value="price_desc" className="bg-[#111]">Price: High to Low</option>
-                <option value="id" className="bg-[#111]">Card ID</option>
+                {roles.map(role => (
+                  <option key={role} value={role} className="bg-[#111]">
+                    {role === "all" ? "All Roles" : role}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -806,7 +776,7 @@ export default function MarketplacePage() {
         {/* Main Content Area */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-48">
-            <Loader2 className="animate-spin text-purple-500 mb-4" size={48} />
+            <Loader2 className="animate-spin text-emerald-500 mb-4" size={48} />
             <p className="text-white/40 font-bold uppercase tracking-widest text-xs">Gathering On-chain Assets...</p>
           </div>
         ) : totalMinted === 0 ? (
@@ -852,7 +822,7 @@ export default function MarketplacePage() {
       {/* Delisting Loader Overlay */}
       {isCancelConfirming && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/85 backdrop-blur-md">
-          <Loader2 className="animate-spin text-purple-500 mb-4" size={48} />
+          <Loader2 className="animate-spin text-emerald-500 mb-4" size={48} />
           <p className="text-white/60 font-bold uppercase tracking-widest text-xs font-sans">Cancelling On-chain Listing...</p>
         </div>
       )}

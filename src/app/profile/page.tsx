@@ -409,8 +409,8 @@ export default function ProfilePage() {
             >
               {/* Dev Simulator Panel (Visible when simulated session is active) */}
               {mockSession && (
-                <div className="w-full max-w-lg p-6 rounded-[28px] bg-purple-500/5 border border-purple-500/20 backdrop-blur-md mb-12">
-                  <div className="flex items-center gap-2 mb-3 text-purple-400 font-sans">
+                <div className="w-full max-w-lg p-6 rounded-[28px] bg-emerald-500/5 border border-emerald-500/20 backdrop-blur-md mb-12">
+                  <div className="flex items-center gap-2 mb-3 text-emerald-400 font-sans">
                     <Sparkles size={16} />
                     <h4 className="text-xs font-black uppercase tracking-wider">Dev Guild Simulator</h4>
                   </div>
@@ -426,7 +426,7 @@ export default function ProfilePage() {
                         const newRole = e.target.value;
                         loadRoles(newRole);
                       }}
-                      className="bg-black/80 border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-purple-500/50 flex-1"
+                      className="bg-black/80 border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-emerald-500/50 flex-1"
                     >
                       <option value="bitty">Bitty (Entry Tier)</option>
                       <option value="ritty">Ritty (Medium Tier)</option>
@@ -450,12 +450,12 @@ export default function ProfilePage() {
                       <User className="text-[#5865F2]" size={36} />
                     </div>
                     <h2 className="text-2xl font-black mb-4">Connect Discord</h2>
-                    <p className="text-white/40 mb-10 leading-relaxed font-sans text-sm">Please link your verified Discord account to sync your game power role and stats.</p>
+                    <p className="text-white/40 mb-10 leading-relaxed font-sans text-sm">Please link your verified Discord account to sync your role and stats.</p>
                     
                     <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
                       <button
                         onClick={() => handleLaunchMock("ritualist")}
-                        className="px-8 py-4 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/20 text-purple-400 rounded-2xl font-bold transition-all text-sm flex items-center justify-center gap-2"
+                        className="px-8 py-4 bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/20 text-emerald-400 rounded-2xl font-bold transition-all text-sm flex items-center justify-center gap-2"
                       >
                         <Sparkles size={16} /> Dev Simulator
                       </button>

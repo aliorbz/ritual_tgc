@@ -439,10 +439,10 @@ export default function CardDetails() {
   const userHasActiveOffer = offersList.some(o => o.offerer.toLowerCase() === address?.toLowerCase());
 
   return (
-    <main className="min-h-screen bg-[#060606] text-white font-['Outfit',sans-serif]">
+    <main className="min-h-screen bg-[#121212] text-white font-['Outfit',sans-serif]">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
+      <div className="max-w-7xl mx-auto px-6 pt-28 pb-20">
         <Link 
           href="/marketplace" 
           className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-all mb-8 font-sans font-bold uppercase tracking-wider text-xs"
@@ -452,7 +452,7 @@ export default function CardDetails() {
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-48">
-            <Loader2 className="animate-spin text-purple-500 mb-4" size={48} />
+            <Loader2 className="animate-spin text-emerald-500 mb-4" size={48} />
             <p className="text-white/40 font-bold uppercase tracking-widest text-xs">Connecting Ledger Assets...</p>
           </div>
         ) : (
@@ -485,9 +485,6 @@ export default function CardDetails() {
                       <Edit3 size={16} /> Edit Card Design
                     </button>
                   )}
-                  <button className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/60 hover:text-white">
-                    <Share2 size={18} />
-                  </button>
                 </div>
               </motion.div>
             </div>
@@ -540,7 +537,7 @@ export default function CardDetails() {
                     {isListed && (
                       <div className="text-right font-sans">
                         <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-2 flex items-center justify-end gap-1.5">
-                          <Clock size={12} className="text-purple-400" /> Sale End Date
+                          <Clock size={12} className="text-emerald-400" /> Sale End Date
                         </p>
                         <p className="text-base font-bold text-white/80">Continuous Ask</p>
                       </div>
@@ -565,7 +562,7 @@ export default function CardDetails() {
                               setListPrice(formatEther(listingPrice));
                               setIsListModalOpen(true);
                             }}
-                            className="py-4 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/20 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                            className="py-4 bg-purple-600/10 hover:bg-purple-600/20 text-emerald-400 border border-purple-500/20 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
                           >
                             <Tag size={18} /> Change Price
                           </button>
@@ -726,7 +723,7 @@ export default function CardDetails() {
                           <tbody className="divide-y divide-white/5">
                             {offersList.map((item, idx) => (
                               <tr key={idx} className="hover:bg-white/5 transition-all">
-                                <td className="px-6 py-4 font-mono font-bold text-purple-400">
+                                <td className="px-6 py-4 font-mono font-bold text-emerald-400">
                                   {item.offerer.slice(0, 10)}...{item.offerer.slice(-8)}
                                 </td>
                                 <td className="px-6 py-4 font-bold text-white">
@@ -784,7 +781,7 @@ export default function CardDetails() {
                                 <Tag size={14} style={{ color: colors.primary }} /> LISTED
                               </td>
                               <td className="px-6 py-4">{formatEther(listingPrice)} RITUAL</td>
-                              <td className="px-6 py-4 text-purple-400">{(owner || "").slice(0, 6)}...{(owner || "").slice(-4)}</td>
+                              <td className="px-6 py-4 text-emerald-400">{(owner || "").slice(0, 6)}...{(owner || "").slice(-4)}</td>
                               <td className="px-6 py-4 text-white/30">MARKETPLACE</td>
                             </tr>
                           )}
@@ -794,7 +791,7 @@ export default function CardDetails() {
                             </td>
                             <td className="px-6 py-4">0.01 RITUAL</td>
                             <td className="px-6 py-4 text-white/30">0x0000...0000</td>
-                            <td className="px-6 py-4 text-purple-400">{(owner || "").slice(0, 6)}...{(owner || "").slice(-4)}</td>
+                            <td className="px-6 py-4 text-emerald-400">{(owner || "").slice(0, 6)}...{(owner || "").slice(-4)}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -814,10 +811,10 @@ export default function CardDetails() {
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-[#0b0b0b] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl font-sans"
+              className="bg-[#121212] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl font-sans"
             >
               <button onClick={() => setIsListModalOpen(false)} className="absolute top-6 right-6 text-white/40 hover:text-white"><X size={20} /></button>
-              <Tag className="text-purple-400 mb-4" size={32} />
+              <Tag className="text-emerald-400 mb-4" size={32} />
               <h3 className="text-2xl font-black font-outfit mb-2">Sell Card</h3>
               <p className="text-white/50 text-sm mb-6">
                 Input your selling price for <strong className="text-white">Card #{id}</strong>. A 5% platform royalty is applied to successful sales. Listing requires a one-time marketplace approval.
@@ -861,10 +858,10 @@ export default function CardDetails() {
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-[#0b0b0b] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl font-sans"
+              className="bg-[#121212] border border-white/10 rounded-[32px] p-8 max-w-sm w-full relative shadow-2xl font-sans"
             >
               <button onClick={() => setIsOfferModalOpen(false)} className="absolute top-6 right-6 text-white/40 hover:text-white"><X size={20} /></button>
-              <Hand className="text-purple-400 mb-4" size={32} />
+              <Hand className="text-emerald-400 mb-4" size={32} />
               <h3 className="text-2xl font-black font-outfit mb-2">Escrow Bid</h3>
               <p className="text-white/50 text-sm mb-6 leading-relaxed">
                 Input your bid for <strong className="text-white">Card #{id}</strong>. Your RITUAL will be locked in the marketplace contract until accepted or cancelled.
@@ -900,10 +897,10 @@ export default function CardDetails() {
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-[#0b0b0b] border border-white/10 rounded-[32px] p-8 max-w-md w-full relative shadow-2xl font-sans max-h-[90vh] overflow-y-auto"
+              className="bg-[#121212] border border-white/10 rounded-[32px] p-8 max-w-md w-full relative shadow-2xl font-sans max-h-[90vh] overflow-y-auto"
             >
               <button onClick={() => setIsEditModalOpen(false)} className="absolute top-6 right-6 text-white/40 hover:text-white"><X size={20} /></button>
-              <Edit3 className="text-purple-400 mb-4" size={32} />
+              <Edit3 className="text-emerald-400 mb-4" size={32} />
               <h3 className="text-2xl font-black font-outfit mb-1">Customize Card</h3>
               <p className="text-white/40 text-xs mb-6">Modify the off-chain styling for your minted NFT. Instantly updates in database.</p>
 

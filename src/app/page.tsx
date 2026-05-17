@@ -134,8 +134,8 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative w-full py-28 lg:py-40 flex items-center justify-center">
         {/* Background Glowing Blobs */}
-        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-purple-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
-        <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
+        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
+        <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
 
         <div className="container mx-auto px-6 relative z-10 text-center max-w-4xl">
           <motion.div
@@ -144,19 +144,19 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center"
           >
-            <span className="px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-black tracking-widest mb-6 inline-block uppercase font-sans">
-              <Sparkles size={10} className="inline mr-1.5 align-middle" /> Web3 Discord Trading Card Game
+            <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-widest mb-6 inline-block uppercase font-sans">
+              <Sparkles size={10} className="inline mr-1.5 align-middle" /> Web3 Discord Trading Card Collection
             </span>
             
             <h1 className="text-5xl md:text-8xl font-black mb-8 leading-[0.95] tracking-tighter uppercase">
               Collect Your <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-indigo-400 to-purple-500 drop-shadow-[0_2px_10px_rgba(147,51,234,0.15)]">
-                Discord Legacy
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500 drop-shadow-[0_2px_10px_rgba(16,185,129,0.15)]">
+                Ritual TCG
               </span>
             </h1>
             
             <p className="text-white/50 text-base md:text-xl max-w-xl mb-10 leading-relaxed font-sans font-medium">
-              The first Discord-native TCG arena. Instantly verify your Ritual server achievements, mint custom high-fidelity NFT collectible cards, and participate in gasless escrow bidding.
+              The first Discord-native TCG collection. Instantly verify your Ritual server achievements, mint custom high-fidelity NFT collectible cards, and participate in secure escrow bidding.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-5 w-full justify-center">
@@ -182,9 +182,9 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
           {[
             {
-              icon: <Layers className="text-purple-400" size={26} />,
+              icon: <Layers className="text-emerald-400" size={26} />,
               title: "Discord-Native Traits",
-              description: "Your card type and in-game power levels are direct mirrors of your Ritual Discord server role, message activity, and days in server."
+              description: "Your card type and attributes are direct mirrors of your Ritual Discord server role, message activity, and days in server."
             },
             {
               icon: <Shield className="text-blue-400" size={26} />,
