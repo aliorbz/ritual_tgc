@@ -132,10 +132,15 @@ export default function CardDetails() {
           args: [actListingId],
         }) as any;
 
-        if (listing && listing.active) {
+        const isArray = Array.isArray(listing);
+        const active = isArray ? listing[5] : listing.active;
+        const listId = isArray ? listing[0] : listing.listingId;
+        const price = isArray ? listing[4] : listing.price;
+
+        if (listing && active) {
           setIsListed(true);
-          setListingId(listing.listingId);
-          setListingPrice(listing.price);
+          setListingId(listId);
+          setListingPrice(price);
         } else {
           setIsListed(false);
         }

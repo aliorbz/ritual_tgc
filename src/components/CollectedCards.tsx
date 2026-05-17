@@ -313,8 +313,8 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
                 {/* Active price badge on card face */}
                 {isListed && listing && listing.active && (
                   <div className="text-center bg-black/70 py-1 rounded-lg border border-white/5">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400">
-                      Listed · {formatEther(listing.price)} RITUAL
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">
+                      {formatEther(listing.price)} RITUAL
                     </span>
                   </div>
                 )}
