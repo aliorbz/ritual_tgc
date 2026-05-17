@@ -1,14 +1,28 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
-import { parseEther, formatEther } from "viem";
+import React, { useState, useEffect, useCallback } from "react";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { parseEther, formatEther, createPublicClient, http } from "viem";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, Tag, X, Loader2, AlertTriangle } from "lucide-react";
+import { ShoppingCart, Tag, X, Loader2, AlertTriangle, Package } from "lucide-react";
 import { CONTRACTS, ROLE_COLORS } from "@/lib/config";
 import { Navbar } from "@/components/Navbar";
 
-// ─── Types ───────────────────────────────────────────────────────────
+// ─── Chain definition (shared) ────────────────────────────────────
+const RITUAL_CHAIN = {
+  id: 1979,
+  name: "Ritual Testnet",
+  nativeCurrency: { name: "RITUAL", symbol: "RITUAL", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.ritualfoundation.org"] } },
+} as const;
+
+function getClient() {
+  return createPublicClient({ chain: RITUAL_CHAIN as any, transport: http() });
+}
+
+// ─── Types ────────────────────────────────────────────────────────
+type CardMeta = { discordId: string; discordRole: string; discordUsername: string };
+
 type Listing = {
   listingId: bigint;
   nftAddress: string;
@@ -16,18 +30,29 @@ type Listing = {
   seller: string;
   price: bigint;
   active: boolean;
-  cardMeta?: { discordUsername: string; discordRole: string; discordId: string };
+  cardMeta?: CardMeta;
 };
 
-// ─── Sub-components ────────────────────────────────────────────────
+type MintedCard = {
+  tokenId: bigint;
+  owner: string;
+  cardMeta?: CardMeta;
+};
+
+// ─── Color helper ─────────────────────────────────────────────────
+function roleColors(role?: string) {
+  const roleType = (role || "ritualist").toLowerCase();
+  return (ROLE_COLORS as any)[roleType] || ROLE_COLORS.ritualist;
+}
+
+// ─── Listed Card ──────────────────────────────────────────────────
 function ListingCard({ listing, onBuy, onOffer, currentAddress }: {
   listing: Listing;
   onBuy: (listing: Listing) => void;
   onOffer: (listing: Listing) => void;
   currentAddress?: string;
 }) {
-  const roleType = (listing.cardMeta?.discordRole || "ritualist").toLowerCase();
-  const colors = (ROLE_COLORS as any)[roleType] || ROLE_COLORS.ritualist;
+  const colors = roleColors(listing.cardMeta?.discordRole);
   const isSelf = currentAddress?.toLowerCase() === listing.seller.toLowerCase();
 
   return (
@@ -90,14 +115,77 @@ function ListingCard({ listing, onBuy, onOffer, currentAddress }: {
   );
 }
 
+// ─── Unlisted Card (offer-only) ───────────────────────────────────
+function UnlistedCard({ card, onOffer, currentAddress }: {
+  card: MintedCard;
+  onOffer: (card: MintedCard) => void;
+  currentAddress?: string;
+}) {
+  const colors = roleColors(card.cardMeta?.discordRole);
+  const isOwner = currentAddress?.toLowerCase() === card.owner.toLowerCase();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative group rounded-[28px] overflow-hidden bg-[#0d0d0d] border border-white/5 hover:border-white/15 transition-all duration-300"
+    >
+      {/* Card art strip */}
+      <div className="h-40 bg-gradient-to-br from-white/3 to-black/40 relative overflow-hidden flex items-center justify-center">
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{ background: `radial-gradient(circle at 50% 50%, ${colors.primary}, transparent 70%)` }}
+        />
+        <div
+          className="w-20 h-20 rounded-2xl text-center font-black text-5xl flex items-center justify-center opacity-60"
+          style={{ color: colors.primary }}
+        >
+          #{card.tokenId.toString()}
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="p-5">
+        <p className="font-black text-white text-lg truncate">
+          {card.cardMeta?.discordUsername || "Unknown"}
+        </p>
+        <p className="text-[11px] font-bold uppercase tracking-widest mb-4" style={{ color: colors.primary }}>
+          {card.cardMeta?.discordRole || "Ritualist"}
+        </p>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] text-white/20 uppercase font-bold">Not Listed</p>
+            <p className="text-white/30 font-black text-sm">No ask price</p>
+          </div>
+          {isOwner ? (
+            <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest border border-white/10 px-3 py-2 rounded-xl">Yours</span>
+          ) : (
+            <button
+              onClick={() => onOffer(card)}
+              className="px-4 py-2 rounded-xl border border-white/20 text-white/70 hover:text-white hover:border-white/40 transition-all text-xs font-black"
+            >
+              Make Offer
+            </button>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── Buy Modal ─────────────────────────────────────────────────────
-function BuyModal({ listing, onClose }: { listing: Listing; onClose: () => void }) {
+function BuyModal({ listing, onClose, onSuccess }: { listing: Listing; onClose: () => void; onSuccess?: () => void }) {
   const { data: hash, writeContract, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
+  useEffect(() => {
+    if (isSuccess && onSuccess) onSuccess();
+  }, [isSuccess, onSuccess]);
+
   const handleBuy = () => {
     writeContract({
-      address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
+      address: CONTRACTS.MARKETPLACE.address,
       abi: CONTRACTS.MARKETPLACE.abi,
       functionName: "buyItem",
       args: [listing.listingId],
@@ -149,22 +237,30 @@ function BuyModal({ listing, onClose }: { listing: Listing; onClose: () => void 
   );
 }
 
-// ─── Offer Modal ────────────────────────────────────────────────────
-function OfferModal({ listing, onClose }: { listing: Listing; onClose: () => void }) {
+// ─── Offer Modal (for both listed and unlisted cards) ──────────────
+type OfferTarget = { tokenId: bigint; discordUsername?: string; nftAddress?: string };
+
+function OfferModal({ target, onClose, onSuccess }: { target: OfferTarget; onClose: () => void; onSuccess?: () => void }) {
   const [offerAmount, setOfferAmount] = useState("");
-  const { data: hash, writeContract, isPending } = useWriteContract();
+  const { data: hash, writeContract, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  useEffect(() => {
+    if (isSuccess && onSuccess) onSuccess();
+  }, [isSuccess, onSuccess]);
 
   const handleOffer = () => {
     if (!offerAmount || parseFloat(offerAmount) <= 0) return;
     writeContract({
-      address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
+      address: CONTRACTS.MARKETPLACE.address,
       abi: CONTRACTS.MARKETPLACE.abi,
       functionName: "makeOffer",
-      args: [CONTRACTS.NFT.address as `0x${string}`, listing.tokenId],
+      args: [CONTRACTS.NFT.address, target.tokenId],
       value: parseEther(offerAmount),
     });
   };
+
+  const errMsg = error ? ((error as any)?.shortMessage || error?.message) : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -177,8 +273,8 @@ function OfferModal({ listing, onClose }: { listing: Listing; onClose: () => voi
         <Tag className="text-white/40 mb-4" size={32} />
         <h3 className="text-2xl font-black mb-2">Make an Offer</h3>
         <p className="text-white/40 text-sm mb-6">
-          For <strong className="text-white">Card #{listing.tokenId.toString()}</strong> by{" "}
-          <strong className="text-white">{listing.cardMeta?.discordUsername || "Unknown"}</strong>.
+          For <strong className="text-white">Card #{target.tokenId.toString()}</strong>
+          {target.discordUsername ? <> by <strong className="text-white">{target.discordUsername}</strong></> : null}.
           Your RITUAL will be escrowed until the seller accepts or you cancel.
         </p>
 
@@ -194,6 +290,12 @@ function OfferModal({ listing, onClose }: { listing: Listing; onClose: () => voi
           />
           <span className="absolute right-5 top-1/2 -translate-y-1/2 text-white/30 font-bold text-sm">RITUAL</span>
         </div>
+
+        {errMsg && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
+            <p className="text-xs font-bold text-red-400">{errMsg}</p>
+          </div>
+        )}
 
         {isSuccess ? (
           <div className="text-center py-4">
@@ -218,104 +320,142 @@ function OfferModal({ listing, onClose }: { listing: Listing; onClose: () => voi
 // ─── Main Page ──────────────────────────────────────────────────────
 export default function MarketplacePage() {
   const { address } = useAccount();
+
   const [listings, setListings] = useState<Listing[]>([]);
+  const [unlistedCards, setUnlistedCards] = useState<MintedCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
   const [selectedBuy, setSelectedBuy] = useState<Listing | null>(null);
-  const [selectedOffer, setSelectedOffer] = useState<Listing | null>(null);
+  const [selectedOffer, setSelectedOffer] = useState<OfferTarget | null>(null);
 
-  // Read total listing count by reading _listingIds — we approximate by reading from 1..N
-  // We'll use a known counter up to 50 and filter active ones
-  const MAX_LISTINGS = 50;
-  const contracts = Array.from({ length: MAX_LISTINGS }, (_, i) => ({
-    address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
-    abi: CONTRACTS.MARKETPLACE.abi,
-    functionName: "listings",
-    args: [BigInt(i + 1)],
-  }));
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const client = getClient();
 
-  const { data: rawListings, isLoading: isListingsLoading } = useReadContract({
-    // We poll by checking listing ID 1 to find total and use a separate approach
-    // Instead we use useReadContracts for batch reading
-    address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
-    abi: CONTRACTS.MARKETPLACE.abi,
-    functionName: "listings",
-    args: [BigInt(1)],
-  });
+      // ── Step 1: Fetch all active listings ────────────────────────
+      const MAX_LISTING_SCAN = 200; // scan up to 200 listing IDs
+      const activeListings: Listing[] = [];
 
-  // Better approach: use dynamic fetching via a hook
-  const [fetchedListings, setFetchedListings] = useState<Listing[]>([]);
+      for (let i = 1; i <= MAX_LISTING_SCAN; i++) {
+        try {
+          const data = await client.readContract({
+            address: CONTRACTS.MARKETPLACE.address,
+            abi: CONTRACTS.MARKETPLACE.abi,
+            functionName: "listings",
+            args: [BigInt(i)],
+          }) as unknown as { listingId: bigint; nftAddress: string; tokenId: bigint; seller: string; price: bigint; active: boolean };
+
+          // If listingId is 0, no listing exists at this ID — stop scanning
+          if (!data || data.listingId === BigInt(0)) break;
+
+          // Skip inactive (sold/cancelled) but keep scanning
+          if (!data.active) continue;
+
+          const listing: Listing = {
+            listingId: data.listingId,
+            nftAddress: data.nftAddress,
+            tokenId: data.tokenId,
+            seller: data.seller,
+            price: data.price,
+            active: data.active,
+          };
+
+          // Fetch card metadata
+          try {
+            const meta = await client.readContract({
+              address: CONTRACTS.NFT.address,
+              abi: CONTRACTS.NFT.abi,
+              functionName: "cardData",
+              args: [listing.tokenId],
+            }) as unknown as { discordId: string; discordRole: string; discordUsername: string };
+
+            listing.cardMeta = {
+              discordId: Array.isArray(meta) ? (meta as any)[0] : meta.discordId,
+              discordRole: Array.isArray(meta) ? (meta as any)[1] : meta.discordRole,
+              discordUsername: Array.isArray(meta) ? (meta as any)[2] : meta.discordUsername,
+            };
+          } catch (_) {}
+
+          activeListings.push(listing);
+        } catch (_) {
+          // RPC error — stop (listing ID doesn't exist)
+          break;
+        }
+      }
+
+      setListings(activeListings);
+      const listedTokenIds = new Set(activeListings.map(l => l.tokenId.toString()));
+
+      // ── Step 2: Fetch all minted cards (totalSupply + tokenByIndex) ──
+      let totalSupply = 0;
+      try {
+        const ts = await client.readContract({
+          address: CONTRACTS.NFT.address,
+          abi: CONTRACTS.NFT.abi,
+          functionName: "totalSupply",
+          args: [],
+        }) as bigint;
+        totalSupply = Number(ts);
+      } catch (_) {}
+
+      const unlisted: MintedCard[] = [];
+
+      for (let i = 0; i < totalSupply; i++) {
+        try {
+          const tokenId = await client.readContract({
+            address: CONTRACTS.NFT.address,
+            abi: CONTRACTS.NFT.abi,
+            functionName: "tokenByIndex",
+            args: [BigInt(i)],
+          }) as bigint;
+
+          // Skip if already listed
+          if (listedTokenIds.has(tokenId.toString())) continue;
+
+          const owner = await client.readContract({
+            address: CONTRACTS.NFT.address,
+            abi: CONTRACTS.NFT.abi,
+            functionName: "ownerOf",
+            args: [tokenId],
+          }) as string;
+
+          const card: MintedCard = { tokenId, owner };
+
+          try {
+            const meta = await client.readContract({
+              address: CONTRACTS.NFT.address,
+              abi: CONTRACTS.NFT.abi,
+              functionName: "cardData",
+              args: [tokenId],
+            }) as unknown as { discordId: string; discordRole: string; discordUsername: string };
+
+            card.cardMeta = {
+              discordId: Array.isArray(meta) ? (meta as any)[0] : meta.discordId,
+              discordRole: Array.isArray(meta) ? (meta as any)[1] : meta.discordRole,
+              discordUsername: Array.isArray(meta) ? (meta as any)[2] : meta.discordUsername,
+            };
+          } catch (_) {}
+
+          unlisted.push(card);
+        } catch (_) {
+          continue;
+        }
+      }
+
+      setUnlistedCards(unlisted);
+    } catch (e) {
+      console.error("Failed to fetch marketplace data", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchListings() {
-      setIsLoading(true);
-      const { createPublicClient, http } = await import("viem");
-      const { ritualTestnet } = await import("viem/chains").catch(() => ({ ritualTestnet: null }));
+    fetchData();
+  }, [fetchData]);
 
-      try {
-        const chain = {
-          id: 1979,
-          name: "Ritual Testnet",
-          nativeCurrency: { name: "RITUAL", symbol: "RITUAL", decimals: 18 },
-          rpcUrls: { default: { http: ["https://rpc.ritualfoundation.org"] } },
-        };
-
-        const client = createPublicClient({ chain: chain as any, transport: http() });
-        const result: Listing[] = [];
-
-        for (let i = 1; i <= MAX_LISTINGS; i++) {
-          try {
-            const data = await client.readContract({
-              address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
-              abi: CONTRACTS.MARKETPLACE.abi,
-              functionName: "listings",
-              args: [BigInt(i)],
-            }) as any[];
-
-            if (!data || !data[5]) break; // active is false or data is empty
-
-            const listing: Listing = {
-              listingId: BigInt(i),
-              nftAddress: data[1],
-              tokenId: data[2],
-              seller: data[3],
-              price: data[4],
-              active: data[5],
-            };
-
-            if (listing.active) {
-              // Fetch card metadata
-              try {
-                const meta = await client.readContract({
-                  address: CONTRACTS.NFT.address as `0x${string}`,
-                  abi: CONTRACTS.NFT.abi,
-                  functionName: "cardData",
-                  args: [listing.tokenId],
-                }) as [string, string, string];
-
-                listing.cardMeta = {
-                  discordId: meta[0],
-                  discordRole: meta[1],
-                  discordUsername: meta[2],
-                };
-              } catch (_) {}
-
-              result.push(listing);
-            }
-          } catch (_) {
-            break; // listing ID doesn't exist, stop
-          }
-        }
-
-        setFetchedListings(result);
-      } catch (e) {
-        console.error("Failed to fetch listings", e);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchListings();
-  }, []);
+  const totalMinted = listings.length + unlistedCards.length;
 
   return (
     <main className="min-h-screen bg-[#080808] text-white font-['Inter',sans-serif]">
@@ -330,41 +470,96 @@ export default function MarketplacePage() {
             <span>·</span>
             <span>Listing &amp; Offers are gas-only</span>
             <span>·</span>
+            {!isLoading && <span>{totalMinted} card{totalMinted !== 1 ? "s" : ""} minted</span>}
+            <span>·</span>
             <span className="text-white/50 font-mono">{CONTRACTS.MARKETPLACE.address.slice(0, 6)}...{CONTRACTS.MARKETPLACE.address.slice(-4)}</span>
           </div>
         </div>
 
-        {/* Listings Grid */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32">
             <Loader2 className="animate-spin text-white/20 mb-4" size={40} />
-            <p className="text-white/30 font-bold uppercase tracking-widest text-sm">Fetching Listings...</p>
+            <p className="text-white/30 font-bold uppercase tracking-widest text-sm">Fetching Cards...</p>
           </div>
-        ) : fetchedListings.length === 0 ? (
+        ) : totalMinted === 0 ? (
+          // No cards minted at all
           <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-white/5 rounded-[40px]">
-            <ShoppingCart className="text-white/10 mb-6" size={64} />
-            <h3 className="text-2xl font-black text-white/20 mb-2">No Active Listings</h3>
-            <p className="text-white/20 text-sm">Mint your card and be the first to list it!</p>
+            <Package className="text-white/10 mb-6" size={64} />
+            <h3 className="text-2xl font-black text-white/20 mb-2">No Cards Minted Yet</h3>
+            <p className="text-white/20 text-sm">Be the first to mint a Ritual TCG card!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {fetchedListings.map((listing) => (
-              <ListingCard
-                key={listing.listingId.toString()}
-                listing={listing}
-                onBuy={setSelectedBuy}
-                onOffer={setSelectedOffer}
-                currentAddress={address}
-              />
-            ))}
-          </div>
+          <>
+            {/* ── Active Listings ────────────────────────────────── */}
+            {listings.length > 0 && (
+              <section className="mb-16">
+                <div className="flex items-center gap-4 mb-8">
+                  <h2 className="text-2xl font-black uppercase tracking-tight">Active Listings</h2>
+                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-white/40">
+                    {listings.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {listings.map((listing) => (
+                    <ListingCard
+                      key={listing.listingId.toString()}
+                      listing={listing}
+                      onBuy={setSelectedBuy}
+                      onOffer={(l) => setSelectedOffer({ tokenId: l.tokenId, discordUsername: l.cardMeta?.discordUsername })}
+                      currentAddress={address}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ── Unlisted Cards (make offers) ──────────────────── */}
+            {unlistedCards.length > 0 && (
+              <section>
+                <div className="flex items-center gap-4 mb-4">
+                  <h2 className="text-2xl font-black uppercase tracking-tight">All Cards</h2>
+                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-white/40">
+                    {unlistedCards.length} not listed
+                  </span>
+                </div>
+                <p className="text-white/30 text-sm mb-8">These cards are minted but not listed. Make an offer and the owner can accept it.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {unlistedCards.map((card) => (
+                    <UnlistedCard
+                      key={card.tokenId.toString()}
+                      card={card}
+                      onOffer={(c) => setSelectedOffer({ tokenId: c.tokenId, discordUsername: c.cardMeta?.discordUsername })}
+                      currentAddress={address}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Edge: listings exist but no unlisted (all minted cards are listed) */}
+            {listings.length > 0 && unlistedCards.length === 0 && (
+              <div className="mt-8 text-center text-white/20 text-sm font-bold">All minted cards are currently listed.</div>
+            )}
+          </>
         )}
       </div>
 
       {/* Modals */}
       <AnimatePresence>
-        {selectedBuy && <BuyModal listing={selectedBuy} onClose={() => setSelectedBuy(null)} />}
-        {selectedOffer && <OfferModal listing={selectedOffer} onClose={() => setSelectedOffer(null)} />}
+        {selectedBuy && (
+          <BuyModal
+            listing={selectedBuy}
+            onClose={() => setSelectedBuy(null)}
+            onSuccess={() => { setSelectedBuy(null); fetchData(); }}
+          />
+        )}
+        {selectedOffer && (
+          <OfferModal
+            target={selectedOffer}
+            onClose={() => setSelectedOffer(null)}
+            onSuccess={() => { setSelectedOffer(null); }}
+          />
+        )}
       </AnimatePresence>
     </main>
   );

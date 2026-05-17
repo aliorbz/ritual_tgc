@@ -21,15 +21,14 @@ export function NFTCard({ id, name, role, price, image, seller }: NFTCardProps) 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      whileHover={{ y: -8 }}
       className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden group transition-all shadow-xl"
       style={{ 
         borderColor: 'rgba(255, 255, 255, 0.1)' 
       }}
       whileHover={{ 
         y: -8,
-        borderColor: `${colors.primary}50`, // 50% opacity hex
-        boxShadow: `0 20px 40px -15px ${colors.primary}33` // 20% opacity hex
+        borderColor: `${colors.primary}50`,
+        boxShadow: `0 20px 40px -15px ${colors.primary}33`
       }}
     >
       <Link href={`/card/${id}`}>

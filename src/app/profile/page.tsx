@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { useAccount, useBalance, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useBalance, useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { useSession, signIn } from "next-auth/react";
-import { User, Wallet, Grid, PlusCircle, Settings, ExternalLink, ShieldCheck } from "lucide-react";
+import { User, Wallet, Grid, PlusCircle, Settings, ExternalLink, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RITUAL_NETWORK, ROLE_COLORS, CONTRACTS } from "@/lib/config";
 import { Navbar } from "@/components/Navbar";
@@ -20,28 +20,57 @@ export default function ProfilePage() {
   const [isRoleLoading, setIsRoleLoading] = React.useState(false);
   const [customImage, setCustomImage] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [mintError, setMintError] = React.useState<string | null>(null);
 
   // Wagmi Write Contract Hook
-  const { data: hash, writeContract, isPending } = useWriteContract();
+  const { data: hash, writeContract, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+  // Check if this Discord ID has already minted
+  const discordId = (session as any)?.user?.id || "";
+  const { data: hasMintedData, refetch: refetchHasMinted } = useReadContract({
+    address: CONTRACTS.NFT.address,
+    abi: CONTRACTS.NFT.abi,
+    functionName: "checkHasMinted",
+    args: [discordId],
+    query: { enabled: !!discordId },
+  });
+  const hasMinted = Boolean(hasMintedData);
+
+  // Refetch after confirmed mint
+  React.useEffect(() => {
+    if (isConfirmed) {
+      refetchHasMinted();
+    }
+  }, [isConfirmed, refetchHasMinted]);
+
+  // Show write errors
+  React.useEffect(() => {
+    if (writeError) {
+      const msg = (writeError as any)?.shortMessage || writeError?.message || "Transaction failed";
+      setMintError(msg);
+    }
+  }, [writeError]);
 
   const handleMint = async () => {
     if (!address || !userData || !session) return;
+    setMintError(null);
     try {
       writeContract({
-        address: CONTRACTS.NFT.address as `0x${string}`,
+        address: CONTRACTS.NFT.address,
         abi: CONTRACTS.NFT.abi,
-        functionName: 'mintCard',
+        functionName: "mintCard",
         args: [
           address,
-          (session as any).user?.id || "",
+          discordId,
           userData.role.name,
-          userData.trueUsername || session.user?.name || "user"
+          userData.trueUsername || session.user?.name || "user",
         ],
         value: parseEther("0.01"),
       });
-    } catch (e) {
+    } catch (e: any) {
       console.error("Minting failed", e);
+      setMintError(e?.shortMessage || e?.message || "Mint failed");
     }
   };
 
@@ -64,7 +93,6 @@ export default function ProfilePage() {
         if (!data.error) {
           setUserData(data);
         } else {
-          // Fallback to basic Ritualist if server check fails
           setUserData({
             role: { type: "ritualist", name: "Ritualist" },
             stats: { messages: "0", joins: "---", activity: "New" }
@@ -81,9 +109,19 @@ export default function ProfilePage() {
     chainId: RITUAL_NETWORK.id,
   });
 
-  const readableBalance = balanceData 
-    ? parseFloat(formatEther(balanceData.value)).toFixed(4) 
+  const readableBalance = balanceData
+    ? parseFloat(formatEther(balanceData.value)).toFixed(4)
     : "0.0000";
+
+  // Determine mint button state
+  const getMintLabel = () => {
+    if (isRoleLoading) return "Syncing...";
+    if (isPending) return "Waiting in Wallet...";
+    if (isConfirming) return "Minting on Chain...";
+    if (isConfirmed) return "✅ Successfully Minted!";
+    if (hasMinted) return "Already Minted";
+    return "Mint TCG";
+  };
 
   if (!isConnected) {
     return (
@@ -103,7 +141,7 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-[#050505] text-white pb-20">
       <Navbar />
-      
+
       {/* Cover Area */}
       <div className="h-64 w-full bg-gradient-to-r from-purple-900/20 via-indigo-900/20 to-black relative border-b border-white/5">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
@@ -140,30 +178,36 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Role Badge */}
               <div className="flex items-center justify-center md:justify-start gap-2">
-                <div 
+                <div
                   className="px-3 py-1 rounded-lg border transition-all"
-                  style={{ 
-                    backgroundColor: isRoleLoading ? "rgba(255,255,255,0.05)" : (ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.bg, 
-                    borderColor: isRoleLoading ? "rgba(255,255,255,0.1)" : (ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.border 
+                  style={{
+                    backgroundColor: isRoleLoading ? "rgba(255,255,255,0.05)" : (ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.bg,
+                    borderColor: isRoleLoading ? "rgba(255,255,255,0.1)" : (ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.border
                   }}
                 >
-                  <span 
+                  <span
                     className={`text-[10px] font-black uppercase tracking-[0.2em] ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-white"}`}
                   >
                     {isRoleLoading ? "Fetching Role..." : (userData?.role?.name || "Ritualist")}
                   </span>
                 </div>
                 {session && !isRoleLoading && <ShieldCheck className="text-blue-500" size={18} />}
+                {hasMinted && !isRoleLoading && (
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <CheckCircle2 size={12} className="text-green-400" />
+                    <span className="text-[10px] font-black text-green-400 uppercase tracking-wider">Card Minted</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             {!session && (
-              <button 
+              <button
                 onClick={() => signIn("discord")}
                 className="px-6 py-3 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-xl font-black transition-all text-sm flex items-center gap-2"
               >
@@ -185,7 +229,7 @@ export default function ProfilePage() {
             { id: "cards", label: "Collected", icon: <Grid size={18} /> },
             { id: "create", label: "Create", icon: <PlusCircle size={18} /> },
           ].map(tab => (
-            <button 
+            <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 text-sm font-black uppercase tracking-widest transition-all relative pb-8 -mb-[33px] ${
@@ -207,7 +251,7 @@ export default function ProfilePage() {
           )}
 
           {activeTab === "create" && (
-            <motion.div 
+            <motion.div
               key="create"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -226,7 +270,7 @@ export default function ProfilePage() {
                     </div>
                     <h2 className="text-2xl font-black mb-4">Connect Discord</h2>
                     <p className="text-white/40 mb-10 leading-relaxed">Please connect your Discord account to see your personalized card preview.</p>
-                    <button 
+                    <button
                       onClick={() => signIn("discord")}
                       className="px-10 py-4 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-2xl font-black transition-all shadow-xl shadow-blue-500/20 flex items-center gap-3 mx-auto"
                     >
@@ -238,7 +282,7 @@ export default function ProfilePage() {
                 <div className="flex flex-col lg:flex-row gap-16 items-center lg:items-start w-full max-w-5xl mt-10">
                   {/* Left: Card Preview */}
                   <div className="flex-1 flex justify-center lg:justify-end">
-                    <CardPreview 
+                    <CardPreview
                       username={session.user?.name || "Ritualist"}
                       avatar={customImage || session.user?.image || ""}
                       role={userData?.role || { type: "ritualist", name: "Ritualist" }}
@@ -273,18 +317,36 @@ export default function ProfilePage() {
                       <span className="text-white/40">Address: <span className={(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}>{address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "0x..."}</span></span>
                     </div>
 
+                    {/* Already minted banner */}
+                    {hasMinted && (
+                      <div className="w-full max-w-sm mb-4 px-5 py-3 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center gap-3">
+                        <CheckCircle2 size={18} className="text-green-400 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-black text-green-400">Card Already Minted</p>
+                          <p className="text-xs text-white/40">Your Discord ID has been used to mint a card. Check the Collected tab.</p>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Mint Button */}
-                    <button 
-                      disabled={isRoleLoading || isPending || isConfirming || isConfirmed}
+                    <button
+                      disabled={isRoleLoading || isPending || isConfirming || hasMinted}
                       onClick={handleMint}
                       className="w-full max-w-sm py-5 rounded-[20px] font-black text-2xl uppercase tracking-tighter transition-all active:scale-95 flex items-center justify-center gap-3 text-black hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ 
+                      style={{
                         backgroundColor: (ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.primary || "#3b82f6",
                         boxShadow: `0 10px 30px -10px ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.primary || "#3b82f6"}`
                       }}
                     >
-                      {isRoleLoading ? "Syncing..." : isPending ? "Waiting in Wallet..." : isConfirming ? "Minting on Chain..." : isConfirmed ? "Successfully Minted!" : "Mint TCG"}
+                      {getMintLabel()}
                     </button>
+
+                    {/* Error */}
+                    {mintError && (
+                      <div className="mt-3 w-full max-w-sm px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <p className="text-xs font-bold text-red-400">{mintError}</p>
+                      </div>
+                    )}
 
                     {/* Mint Info */}
                     <div className="flex items-center gap-6 mt-6 lg:ml-2 text-[10px] font-bold text-white/30 uppercase tracking-widest">
@@ -294,16 +356,16 @@ export default function ProfilePage() {
 
                     {/* Manual Upload */}
                     <div className="mt-8 flex flex-col lg:items-start items-center">
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        ref={fileInputRef} 
-                        onChange={handleImageUpload} 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        className="hidden"
                       />
                       <p className="text-sm font-bold text-white mb-1">
                         low image resolution?{" "}
-                        <button 
+                        <button
                           onClick={() => fileInputRef.current?.click()}
                           className={`uppercase underline hover:brightness-125 transition-all ${(ROLE_COLORS as any)[userData?.role?.type || "ritualist"]?.text || "text-blue-500"}`}
                         >

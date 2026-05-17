@@ -9,11 +9,13 @@ import { PlusCircle, Loader2, Tag, X, AlertTriangle, CheckCircle } from "lucide-
 import { motion, AnimatePresence } from "framer-motion";
 
 // ─── List for Sale Modal ────────────────────────────────────────────
-function ListModal({ tokenId, onClose }: { tokenId: bigint; onClose: () => void }) {
+function ListModal({ tokenId, onClose, onSuccess }: { tokenId: bigint; onClose: () => void; onSuccess?: () => void }) {
   const [price, setPrice] = useState("");
   const [step, setStep] = useState<"approve" | "list">("approve");
+
   const { data: approveHash, writeContract: approve, isPending: isApprovePending } = useWriteContract();
   const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed } = useWaitForTransactionReceipt({ hash: approveHash });
+
   const { data: listHash, writeContract: list, isPending: isListPending } = useWriteContract();
   const { isLoading: isListConfirming, isSuccess: isListConfirmed } = useWaitForTransactionReceipt({ hash: listHash });
 
@@ -21,22 +23,26 @@ function ListModal({ tokenId, onClose }: { tokenId: bigint; onClose: () => void 
     if (isApproveConfirmed) setStep("list");
   }, [isApproveConfirmed]);
 
+  useEffect(() => {
+    if (isListConfirmed && onSuccess) onSuccess();
+  }, [isListConfirmed, onSuccess]);
+
   const handleApprove = () => {
     approve({
-      address: CONTRACTS.NFT.address as `0x${string}`,
+      address: CONTRACTS.NFT.address,
       abi: CONTRACTS.NFT.abi,
       functionName: "setApprovalForAll",
-      args: [CONTRACTS.MARKETPLACE.address as `0x${string}`, true],
+      args: [CONTRACTS.MARKETPLACE.address, true],
     });
   };
 
   const handleList = () => {
     if (!price || parseFloat(price) <= 0) return;
     list({
-      address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
+      address: CONTRACTS.MARKETPLACE.address,
       abi: CONTRACTS.MARKETPLACE.abi,
       functionName: "listItem",
-      args: [CONTRACTS.NFT.address as `0x${string}`, tokenId, parseEther(price)],
+      args: [CONTRACTS.NFT.address, tokenId, parseEther(price)],
     });
   };
 
@@ -115,17 +121,20 @@ function ListModal({ tokenId, onClose }: { tokenId: bigint; onClose: () => void 
 }
 
 // ─── Accept Offer Modal ─────────────────────────────────────────────
-function AcceptOfferModal({ tokenId, offerers, onClose }: { tokenId: bigint; offerers: string[]; onClose: () => void }) {
-  const [offerAmounts, setOfferAmounts] = useState<Record<string, string>>({});
+function AcceptOfferModal({ tokenId, offerers, onClose, onSuccess }: { tokenId: bigint; offerers: string[]; onClose: () => void; onSuccess?: () => void }) {
   const { data: hash, writeContract, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
+  useEffect(() => {
+    if (isSuccess && onSuccess) onSuccess();
+  }, [isSuccess, onSuccess]);
+
   const handleAccept = (offerer: string) => {
     writeContract({
-      address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
+      address: CONTRACTS.MARKETPLACE.address,
       abi: CONTRACTS.MARKETPLACE.abi,
       functionName: "acceptOffer",
-      args: [CONTRACTS.NFT.address as `0x${string}`, tokenId, offerer as `0x${string}`],
+      args: [CONTRACTS.NFT.address, tokenId, offerer as `0x${string}`],
     });
   };
 
@@ -162,20 +171,20 @@ function AcceptOfferModal({ tokenId, offerers, onClose }: { tokenId: bigint; off
 
 function OfferRow({ offerer, tokenId, onAccept, isPending }: { offerer: string; tokenId: bigint; onAccept: (o: string) => void; isPending: boolean }) {
   const { data } = useReadContract({
-    address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
+    address: CONTRACTS.MARKETPLACE.address,
     abi: CONTRACTS.MARKETPLACE.abi,
     functionName: "offers",
-    args: [CONTRACTS.NFT.address as `0x${string}`, tokenId, offerer as `0x${string}`],
+    args: [CONTRACTS.NFT.address, tokenId, offerer as `0x${string}`],
   });
-  const offer = data as [string, bigint, boolean] | undefined;
+  const offer = data as { offerer: string; amount: bigint; active: boolean } | undefined;
 
-  if (!offer || !offer[2]) return null;
+  if (!offer || !offer.active) return null;
 
   return (
     <div className="flex items-center justify-between bg-white/5 rounded-2xl px-4 py-3">
       <div>
         <p className="font-mono text-xs text-white/50">{offerer.slice(0, 6)}...{offerer.slice(-4)}</p>
-        <p className="font-black text-white">{formatEther(offer[1])} RITUAL</p>
+        <p className="font-black text-white">{formatEther(offer.amount)} RITUAL</p>
       </div>
       <button
         onClick={() => onAccept(offerer)}
@@ -189,46 +198,67 @@ function OfferRow({ offerer, tokenId, onAccept, isPending }: { offerer: string; 
 }
 
 // ─── Collected Card Item ───────────────────────────────────────────
-function OwnedCardItem({ token, address }: { token: any; address: string }) {
+function OwnedCardItem({ token, address, onRefresh }: { token: any; address: string; onRefresh: () => void }) {
   const [showListModal, setShowListModal] = useState(false);
   const [showOffersModal, setShowOffersModal] = useState(false);
   const tokenId = BigInt(token.tokenId);
 
   // Check if currently listed
-  const { data: listingIdData } = useReadContract({
-    address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
+  const { data: listingIdData, refetch: refetchListingId } = useReadContract({
+    address: CONTRACTS.MARKETPLACE.address,
     abi: CONTRACTS.MARKETPLACE.abi,
     functionName: "activeListings",
-    args: [CONTRACTS.NFT.address as `0x${string}`, tokenId],
+    args: [CONTRACTS.NFT.address, tokenId],
+    query: { refetchInterval: 5000 },
   });
   const listingId = listingIdData as bigint | undefined;
-  const isListed = listingId !== undefined && listingId > 0n;
+  const isListed = listingId !== undefined && listingId > BigInt(0);
 
   // Get listing price if listed
-  const { data: listingData } = useReadContract({
-    address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
+  const { data: listingData, refetch: refetchListing } = useReadContract({
+    address: CONTRACTS.MARKETPLACE.address,
     abi: CONTRACTS.MARKETPLACE.abi,
     functionName: "listings",
-    args: isListed ? [listingId] : undefined,
-    query: { enabled: isListed },
+    args: isListed ? [listingId!] : [BigInt(0)],
+    query: { enabled: isListed, refetchInterval: 5000 },
   });
-  const listing = listingData as any[] | undefined;
+  const listing = listingData as unknown as { listingId: bigint; nftAddress: string; tokenId: bigint; seller: string; price: bigint; active: boolean } | undefined;
 
   // Cancel listing
   const { data: cancelListHash, writeContract: cancelListing, isPending: isCancelPending } = useWriteContract();
-  const { isLoading: isCancelConfirming } = useWaitForTransactionReceipt({ hash: cancelListHash });
+  const { isLoading: isCancelConfirming, isSuccess: isCancelConfirmed } = useWaitForTransactionReceipt({ hash: cancelListHash });
+
+  // Refetch after cancel
+  useEffect(() => {
+    if (isCancelConfirmed) {
+      refetchListingId();
+      refetchListing();
+      onRefresh();
+    }
+  }, [isCancelConfirmed]);
 
   // Get all offerers
-  const { data: offerersData } = useReadContract({
-    address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
+  const { data: offerersData, refetch: refetchOfferers } = useReadContract({
+    address: CONTRACTS.MARKETPLACE.address,
     abi: CONTRACTS.MARKETPLACE.abi,
     functionName: "getOfferers",
-    args: [CONTRACTS.NFT.address as `0x${string}`, tokenId],
+    args: [CONTRACTS.NFT.address, tokenId],
+    query: { refetchInterval: 10000 },
   });
   const offerers = (offerersData as string[] | undefined) || [];
 
   const roleType = (token.discordRole || "ritualist").toLowerCase();
   const colors = (ROLE_COLORS as any)[roleType] || ROLE_COLORS.ritualist;
+
+  const handleCancelListing = () => {
+    if (!listingId || listingId === BigInt(0)) return;
+    cancelListing({
+      address: CONTRACTS.MARKETPLACE.address,
+      abi: CONTRACTS.MARKETPLACE.abi,
+      functionName: "cancelListing",
+      args: [listingId],
+    });
+  };
 
   return (
     <>
@@ -251,9 +281,9 @@ function OwnedCardItem({ token, address }: { token: any; address: string }) {
           {/* Token ID badge */}
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono text-white/30">#{token.tokenId}</span>
-            {isListed && listing && (
+            {isListed && listing && listing.active && (
               <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: colors.primary }}>
-                Listed · {formatEther(listing[4])} RITUAL
+                Listed · {formatEther(listing.price)} RITUAL
               </span>
             )}
           </div>
@@ -271,16 +301,11 @@ function OwnedCardItem({ token, address }: { token: any; address: string }) {
           {/* Actions */}
           {isListed ? (
             <button
-              onClick={() => cancelListing({
-                address: CONTRACTS.MARKETPLACE.address as `0x${string}`,
-                abi: CONTRACTS.MARKETPLACE.abi,
-                functionName: "cancelListing",
-                args: [listingId!],
-              })}
+              onClick={handleCancelListing}
               disabled={isCancelPending || isCancelConfirming}
               className="w-full py-2.5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all text-xs font-black uppercase tracking-wider disabled:opacity-50"
             >
-              {isCancelPending ? "Waiting..." : isCancelConfirming ? "Cancelling..." : "Remove Listing"}
+              {isCancelPending ? "Waiting..." : isCancelConfirming ? "Cancelling..." : isCancelConfirmed ? "✅ Delisted!" : "Remove Listing"}
             </button>
           ) : (
             <button
@@ -295,12 +320,26 @@ function OwnedCardItem({ token, address }: { token: any; address: string }) {
       </motion.div>
 
       <AnimatePresence>
-        {showListModal && <ListModal tokenId={tokenId} onClose={() => setShowListModal(false)} />}
+        {showListModal && (
+          <ListModal
+            tokenId={tokenId}
+            onClose={() => setShowListModal(false)}
+            onSuccess={() => {
+              refetchListingId();
+              refetchListing();
+              onRefresh();
+            }}
+          />
+        )}
         {showOffersModal && (
           <AcceptOfferModal
             tokenId={tokenId}
             offerers={offerers}
             onClose={() => setShowOffersModal(false)}
+            onSuccess={() => {
+              refetchOfferers();
+              onRefresh();
+            }}
           />
         )}
       </AnimatePresence>
@@ -311,38 +350,31 @@ function OwnedCardItem({ token, address }: { token: any; address: string }) {
 // ─── Main Export ───────────────────────────────────────────────────
 export function CollectedCards() {
   const { address } = useAccount();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const triggerRefresh = () => setRefreshKey(k => k + 1);
 
   // 1. Get NFT balance
-  const { data: balanceData, isLoading: isBalanceLoading } = useReadContract({
-    address: CONTRACTS.NFT.address as `0x${string}`,
-    abi: [
-      {
-        name: "balanceOf",
-        type: "function",
-        stateMutability: "view",
-        inputs: [{ name: "owner", type: "address" }],
-        outputs: [{ type: "uint256" }],
-      },
-    ],
+  const { data: balanceData, isLoading: isBalanceLoading, refetch: refetchBalance } = useReadContract({
+    address: CONTRACTS.NFT.address,
+    abi: CONTRACTS.NFT.abi,
     functionName: "balanceOf",
-    args: address ? [address] : undefined,
-    query: { enabled: !!address },
+    args: [address ?? ("0x0000000000000000000000000000000000000000" as `0x${string}`)],
+    query: { enabled: !!address, refetchOnMount: true },
   });
 
   const balance = balanceData ? Number(balanceData) : 0;
 
+  // Refetch on refresh
+  useEffect(() => {
+    if (refreshKey > 0) refetchBalance();
+  }, [refreshKey]);
+
   // 2. Get token IDs via tokenOfOwnerByIndex
   const tokenIndexCalls = Array.from({ length: balance }, (_, i) => ({
-    address: CONTRACTS.NFT.address as `0x${string}`,
-    abi: [{
-      name: "tokenOfOwnerByIndex",
-      type: "function",
-      stateMutability: "view",
-      inputs: [{ name: "owner", type: "address" }, { name: "index", type: "uint256" }],
-      outputs: [{ type: "uint256" }],
-    }],
-    functionName: "tokenOfOwnerByIndex",
-    args: [address, BigInt(i)],
+    address: CONTRACTS.NFT.address,
+    abi: CONTRACTS.NFT.abi,
+    functionName: "tokenOfOwnerByIndex" as const,
+    args: [address!, BigInt(i)] as [`0x${string}`, bigint],
   }));
 
   const { data: tokenIdsData, isLoading: isTokenIdsLoading } = useReadContracts({
@@ -352,10 +384,10 @@ export function CollectedCards() {
 
   // 3. Get card metadata
   const cardDataCalls = (tokenIdsData || []).map((r: any) => ({
-    address: CONTRACTS.NFT.address as `0x${string}`,
+    address: CONTRACTS.NFT.address,
     abi: CONTRACTS.NFT.abi,
-    functionName: "cardData",
-    args: r.result !== undefined ? [r.result] : undefined,
+    functionName: "cardData" as const,
+    args: r.result !== undefined ? [r.result] : [BigInt(0)],
   }));
 
   const { data: metadataResults, isLoading: isMetadataLoading } = useReadContracts({
@@ -369,13 +401,17 @@ export function CollectedCards() {
     if (!tokenIdsData || !metadataResults) return [];
     return tokenIdsData.map((idResult: any, i) => {
       const tokenId = idResult.result;
-      const meta = metadataResults[i]?.result as [string, string, string] | undefined;
+      const meta = metadataResults[i]?.result as { discordId: string; discordRole: string; discordUsername: string } | [string, string, string] | undefined;
       if (tokenId === undefined || !meta) return null;
+      // Handle both tuple and named return formats
+      const discordId = Array.isArray(meta) ? meta[0] : meta.discordId;
+      const discordRole = Array.isArray(meta) ? meta[1] : meta.discordRole;
+      const discordUsername = Array.isArray(meta) ? meta[2] : meta.discordUsername;
       return {
         tokenId: tokenId.toString(),
-        discordId: meta[0],
-        discordRole: meta[1],
-        discordUsername: meta[2],
+        discordId,
+        discordRole,
+        discordUsername,
       };
     }).filter(Boolean);
   }, [tokenIdsData, metadataResults]);
@@ -414,7 +450,7 @@ export function CollectedCards() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
       {tokens.map((token: any) => (
-        <OwnedCardItem key={token.tokenId} token={token} address={address} />
+        <OwnedCardItem key={token.tokenId} token={token} address={address} onRefresh={triggerRefresh} />
       ))}
     </div>
   );

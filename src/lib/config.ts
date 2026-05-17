@@ -1,3 +1,5 @@
+import { parseAbi } from "viem";
+
 export const RITUAL_NETWORK = {
   id: 1979,
   name: "Ritual",
@@ -30,12 +32,12 @@ export const DISCORD_CONFIG = {
 export const MARKETPLACE_CONFIG = {
   listingFee: "0.01",
   platformFeePercent: 5,
-  feeReceiver: "0x0000000000000000000000000000000000000000", // Update with user's wallet
+  feeReceiver: "0x0000000000000000000000000000000000000000",
 };
 
 export const ROLE_COLORS = {
   mod: {
-    primary: "#FF1493", // Pink
+    primary: "#FF1493",
     secondary: "#FF69B4",
     glow: "rgba(255, 20, 147, 0.5)",
     text: "text-pink-400",
@@ -43,7 +45,7 @@ export const ROLE_COLORS = {
     border: "border-pink-500/30"
   },
   radiant: {
-    primary: "#FFD700", // Vibrant Golden
+    primary: "#FFD700",
     secondary: "#FDB931",
     glow: "rgba(255, 215, 0, 0.7)",
     text: "text-yellow-400",
@@ -51,7 +53,7 @@ export const ROLE_COLORS = {
     border: "border-yellow-500/50"
   },
   ritualist: {
-    primary: "#39FF14", // Neon Green
+    primary: "#39FF14",
     secondary: "#32CD32",
     glow: "rgba(57, 255, 20, 0.5)",
     text: "text-green-400",
@@ -59,7 +61,7 @@ export const ROLE_COLORS = {
     border: "border-green-500/30"
   },
   ritty: {
-    primary: "#BF00FF", // Purple
+    primary: "#BF00FF",
     secondary: "#8B008B",
     glow: "rgba(191, 0, 255, 0.5)",
     text: "text-purple-400",
@@ -67,7 +69,7 @@ export const ROLE_COLORS = {
     border: "border-purple-500/30"
   },
   bitty: {
-    primary: "#00BFFF", // Blue
+    primary: "#00BFFF",
     secondary: "#0000FF",
     glow: "rgba(0, 191, 255, 0.5)",
     text: "text-blue-400",
@@ -75,33 +77,43 @@ export const ROLE_COLORS = {
     border: "border-blue-500/30"
   },
 };
+
+// ── Typed ABIs (parsed for wagmi/viem compatibility) ──────────────────
+export const NFT_ABI = parseAbi([
+  "function checkHasMinted(string discordId) public view returns (bool)",
+  "function mintCard(address to, string discordId, string discordRole, string discordUsername) public payable returns (uint256)",
+  "function ownerOf(uint256 tokenId) public view returns (address)",
+  "function balanceOf(address owner) public view returns (uint256)",
+  "function tokenOfOwnerByIndex(address owner, uint256 index) public view returns (uint256)",
+  "function tokenByIndex(uint256 index) public view returns (uint256)",
+  "function totalSupply() public view returns (uint256)",
+  "function approve(address to, uint256 tokenId) public",
+  "function isApprovedForAll(address owner, address operator) public view returns (bool)",
+  "function setApprovalForAll(address operator, bool approved) public",
+  "function cardData(uint256 tokenId) public view returns (string discordId, string discordRole, string discordUsername)",
+  "function MINT_FEE() public view returns (uint256)",
+]);
+
+export const MARKETPLACE_ABI = parseAbi([
+  "function listItem(address nftAddress, uint256 tokenId, uint256 price) external",
+  "function cancelListing(uint256 listingId) external",
+  "function buyItem(uint256 listingId) external payable",
+  "function listings(uint256 listingId) public view returns (uint256 listingId, address nftAddress, uint256 tokenId, address seller, uint256 price, bool active)",
+  "function activeListings(address nftAddress, uint256 tokenId) public view returns (uint256)",
+  "function makeOffer(address nftAddress, uint256 tokenId) external payable",
+  "function cancelOffer(address nftAddress, uint256 tokenId) external",
+  "function acceptOffer(address nftAddress, uint256 tokenId, address offerer) external",
+  "function offers(address nftAddress, uint256 tokenId, address offerer) public view returns (address offerer, uint256 amount, bool active)",
+  "function getOfferers(address nftAddress, uint256 tokenId) external view returns (address[])",
+]);
+
 export const CONTRACTS = {
   NFT: {
-    address: "0x3709CE39819fE72F6eF9d76E7196481219A995Db",
-    abi: [
-      "function checkHasMinted(string discordId) public view returns (bool)",
-      "function mintCard(address to, string discordId, string discordRole, string discordUsername) public payable returns (uint256)",
-      "function ownerOf(uint256 tokenId) public view returns (address)",
-      "function approve(address to, uint256 tokenId) public",
-      "function isApprovedForAll(address owner, address operator) public view returns (bool)",
-      "function setApprovalForAll(address operator, bool approved) public",
-      "function cardData(uint256 tokenId) public view returns (string, string, string)",
-      "function MINT_FEE() public view returns (uint256)"
-    ]
+    address: "0x3709CE39819fE72F6eF9d76E7196481219A995Db" as const,
+    abi: NFT_ABI,
   },
   MARKETPLACE: {
-    address: "0x2a3C8A880398FF6DD8e6F9976c8BE6C8aBef2435",
-    abi: [
-      "function listItem(address nftAddress, uint256 tokenId, uint256 price) external",
-      "function cancelListing(uint256 listingId) external",
-      "function buyItem(uint256 listingId) external payable",
-      "function listings(uint256 listingId) public view returns (uint256, address, uint256, address, uint256, bool)",
-      "function activeListings(address nftAddress, uint256 tokenId) public view returns (uint256)",
-      "function makeOffer(address nftAddress, uint256 tokenId) external payable",
-      "function cancelOffer(address nftAddress, uint256 tokenId) external",
-      "function acceptOffer(address nftAddress, uint256 tokenId, address offerer) external",
-      "function offers(address nftAddress, uint256 tokenId, address offerer) public view returns (address, uint256, bool)",
-      "function getOfferers(address nftAddress, uint256 tokenId) external view returns (address[])"
-    ]
-  }
+    address: "0x2a3C8A880398FF6DD8e6F9976c8BE6C8aBef2435" as const,
+    abi: MARKETPLACE_ABI,
+  },
 };

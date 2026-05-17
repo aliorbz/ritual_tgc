@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { DISCORD_CONFIG } from "@/lib/config";
 
 export async function getDiscordUserRoles() {
-  const session = await auth();
+  const session = await auth() as any;
   
   if (!session || !session.accessToken) {
     return { error: "Not authenticated" };
