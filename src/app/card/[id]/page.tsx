@@ -23,7 +23,8 @@ import {
   ArrowRight,
   Upload,
   RefreshCw,
-  Trash2
+  Trash2,
+  X
 } from "lucide-react";
 import Link from "next/link";
 import { CONTRACTS, ROLE_COLORS, RITUAL_NETWORK } from "@/lib/config";
