@@ -1,179 +1,309 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Search, Filter, SlidersHorizontal, ArrowUpDown, Zap, Shield, Trophy, ChevronRight } from "lucide-react";
-import { NFTCard } from "@/components/NFTCard";
-import { getRoleColors } from "@/lib/utils";
+import { 
+  Zap, 
+  Shield, 
+  Trophy, 
+  ArrowRight, 
+  Sparkles, 
+  Layers, 
+  Flame, 
+  Loader2 
+} from "lucide-react";
+import { parseEther, formatEther, createPublicClient, http } from "viem";
+import { CONTRACTS, RITUAL_NETWORK } from "@/lib/config";
+import { Navbar } from "@/components/Navbar";
+import { CardPreview } from "@/components/CardPreview";
 
-const MOCK_CARDS = [
-  { id: "1", name: "RitualMaster#001", role: "Mod", price: "250", image: "https://placehold.co/400x600/1a1a1a/ffffff?text=MOD+CARD", seller: "0x1234...5678" },
-  { id: "2", name: "ShadowWalker#999", role: "Ritualist", price: "45", image: "https://placehold.co/400x600/1a1a1a/ffffff?text=RITUALIST+CARD", seller: "0x8888...9999" },
-  { id: "3", name: "LightningBolt#777", role: "Ritty", price: "12", image: "https://placehold.co/400x600/1a1a1a/ffffff?text=RITTY+CARD", seller: "0xaaaa...bbbb" },
-  { id: "4", name: "VoidSeeker#444", role: "Bitty", price: "5", image: "https://placehold.co/400x600/1a1a1a/ffffff?text=BITTY+CARD", seller: "0xcccc...dddd" },
-  { id: "5", name: "RadiantKing#1337", role: "Radiant", price: "150", image: "https://placehold.co/400x600/1a1a1a/ffffff?text=RADIANT+CARD", seller: "0xeeee...ffff" },
-  { id: "6", name: "DevMaster#000", role: "Mod", price: "300", image: "https://placehold.co/400x600/1a1a1a/ffffff?text=MOD+CARD+2", seller: "0x2222...3333" },
-];
+// ─── Dynamic RPC Chain definition ───────────────────────────────────
+const RITUAL_CHAIN = {
+  id: RITUAL_NETWORK.id,
+  name: RITUAL_NETWORK.name,
+  nativeCurrency: RITUAL_NETWORK.nativeCurrency,
+  rpcUrls: { 
+    default: { 
+      http: [process.env.NODE_ENV === "development" ? "http://127.0.0.1:8545" : "https://rpc.ritualfoundation.org"] 
+    } 
+  },
+} as const;
+
+function getClient() {
+  return createPublicClient({ chain: RITUAL_CHAIN as any, transport: http() });
+}
+
+type CardMeta = { 
+  discordId: string; 
+  discordRole: string; 
+  discordUsername: string;
+  image?: string;
+  traits?: any;
+};
+
+type Listing = {
+  tokenId: bigint;
+  cardMeta?: CardMeta;
+  price: bigint;
+};
 
 export default function Home() {
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("All");
+  const [featuredListings, setFeaturedListings] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const roles = ["All", "Mod", "Radiant", "Ritualist", "Ritty", "Bitty"];
+  const fetchFeatured = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const client = getClient();
+      const MAX_SCAN = 12; // Scan up to 12 listings for showcase
+      const list: Listing[] = [];
 
-  const filteredCards = MOCK_CARDS.filter(card => {
-    const matchesSearch = card.name.toLowerCase().includes(search.toLowerCase()) || card.id === search;
-    const matchesFilter = filter === "All" || card.role === filter;
-    return matchesSearch && matchesFilter;
-  });
+      for (let i = 1; i <= MAX_SCAN; i++) {
+        try {
+          const data = await client.readContract({
+            address: CONTRACTS.MARKETPLACE.address,
+            abi: CONTRACTS.MARKETPLACE.abi,
+            functionName: "listings",
+            args: [BigInt(i)],
+          }) as any;
+
+          if (!data || data.listingId === BigInt(0)) break;
+          if (!data.active) continue;
+
+          // Fetch local JSON metadata
+          let cardMeta: CardMeta | undefined;
+          try {
+            const res = await fetch(`/api/metadata/${data.tokenId}`);
+            if (res.ok) {
+              const meta = await res.json();
+              cardMeta = {
+                discordId: meta.discordId,
+                discordRole: meta.discordRole,
+                discordUsername: meta.name,
+                image: meta.image,
+                traits: meta.traits
+              };
+            }
+          } catch (_) {
+            // On-chain fallback
+            try {
+              const meta = await client.readContract({
+                address: CONTRACTS.NFT.address,
+                abi: CONTRACTS.NFT.abi,
+                functionName: "cardData",
+                args: [data.tokenId],
+              }) as any;
+
+              cardMeta = {
+                discordId: Array.isArray(meta) ? meta[0] : meta.discordId,
+                discordRole: Array.isArray(meta) ? meta[1] : meta.discordRole,
+                discordUsername: Array.isArray(meta) ? meta[2] : meta.discordUsername,
+              };
+            } catch (_) {}
+          }
+
+          list.push({
+            tokenId: data.tokenId,
+            price: data.price,
+            cardMeta
+          });
+
+          if (list.length >= 4) break; // we only need 4 featured items
+        } catch (_) {
+          break;
+        }
+      }
+
+      setFeaturedListings(list);
+    } catch (e) {
+      console.error("Failed to load featured listings", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFeatured();
+  }, [fetchFeatured]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-[#060606] text-white overflow-hidden font-['Outfit',sans-serif]">
+      <Navbar />
+
       {/* Hero Section */}
-      <section className="relative w-full py-16 lg:py-24 overflow-hidden">
-        <div className="container mx-auto px-6 relative z-10">
+      <section className="relative w-full py-28 lg:py-40 flex items-center justify-center">
+        {/* Background Glowing Blobs */}
+        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-purple-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
+        <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
+
+        <div className="container mx-auto px-6 relative z-10 text-center max-w-4xl">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
+            transition={{ duration: 0.8 }}
+            className="flex flex-col items-center"
           >
-            <span className="px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold tracking-widest mb-6 inline-block uppercase">
-              Ritual Foundation Testnet
+            <span className="px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-black tracking-widest mb-6 inline-block uppercase font-sans">
+              <Sparkles size={10} className="inline mr-1.5 align-middle" /> Web3 Discord Trading Card Game
             </span>
-            <h1 className="text-4xl lg:text-7xl font-outfit font-black mb-6 leading-[1.1] tracking-tight">
+            
+            <h1 className="text-5xl md:text-8xl font-black mb-8 leading-[0.95] tracking-tighter uppercase">
               Collect Your <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-indigo-400 to-purple-400">
-                Ritual Legacy
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-indigo-400 to-purple-500 drop-shadow-[0_2px_10px_rgba(147,51,234,0.15)]">
+                Discord Legacy
               </span>
             </h1>
-            <p className="text-white/50 text-base lg:text-lg max-w-xl mb-8 leading-relaxed font-medium">
-              The first Discord-native TCG marketplace. Mint unique trading cards based on your Ritual community roles.
+            
+            <p className="text-white/50 text-base md:text-xl max-w-xl mb-10 leading-relaxed font-sans font-medium">
+              The first Discord-native TCG arena. Instantly verify your Ritual server achievements, mint custom high-fidelity NFT collectible cards, and participate in gasless escrow bidding.
             </p>
-          </motion.div>
-        </div>
 
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-1/2 h-full z-0 opacity-20 pointer-events-none">
-          <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[500px] h-[500px] bg-purple-600/30 blur-[120px] rounded-full" />
+            <div className="flex flex-col sm:flex-row items-center gap-5 w-full justify-center">
+              <Link 
+                href="/marketplace"
+                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-white text-black font-black text-lg flex items-center justify-center gap-3 transition-all hover:brightness-95 shadow-xl hover:shadow-white/5"
+              >
+                Enter Marketplace <ArrowRight size={20} />
+              </Link>
+              <Link 
+                href="/profile"
+                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-black text-lg flex items-center justify-center gap-3 transition-all"
+              >
+                Connect &amp; Mint Card
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Marketplace Section */}
-      <section className="container mx-auto px-6 pb-24">
-        <div className="flex flex-col gap-8">
-          {/* Controls */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md">
-            <div className="flex flex-col sm:flex-row items-center gap-4 flex-1">
-              <div className="relative w-full sm:max-w-md group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-purple-400 transition-colors" size={20} />
-                <input 
-                  type="text" 
-                  placeholder="Search by name or ID..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-black/40 border border-white/5 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
-                />
+      {/* Feature Showcase Grid */}
+      <section className="container mx-auto px-6 py-20 border-t border-white/5 relative z-10 bg-white/[0.01]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
+          {[
+            {
+              icon: <Layers className="text-purple-400" size={26} />,
+              title: "Discord-Native Traits",
+              description: "Your card type and in-game power levels are direct mirrors of your Ritual Discord server role, message activity, and days in server."
+            },
+            {
+              icon: <Shield className="text-blue-400" size={26} />,
+              title: "Platform-Royalty Free",
+              description: "Secured by zero-fee smart contracts. All marketplace listings and bid negotiations are gas-only, maximizing profit for creators."
+            },
+            {
+              icon: <Flame className="text-yellow-400" size={26} />,
+              title: "Upgradable Power Tiers",
+              description: "Minted a card as a Bitty? Unlock next-tier minting capabilities automatically as you climb roles to Ritty, Ritualist, or Mod!"
+            }
+          ].map((feat, i) => (
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              className="p-8 rounded-3xl bg-[#0a0a0a] border border-white/5 flex flex-col gap-5 hover:border-white/10 transition-all duration-300"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                {feat.icon}
               </div>
-              
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide w-full sm:w-auto">
-                {roles.map(role => {
-                  const colors = getRoleColors(role);
-                  const isActive = filter === role;
-                  
-                  return (
-                    <button
-                      key={role}
-                      onClick={() => setFilter(role)}
-                      className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border ${
-                        isActive 
-                        ? "text-white shadow-lg" 
-                        : "bg-white/5 text-white/40 border-transparent hover:bg-white/10"
-                      }`}
-                      style={{ 
-                        backgroundColor: isActive ? colors.primary : undefined,
-                        borderColor: isActive ? colors.primary : undefined,
-                        boxShadow: isActive ? `0 10px 20px -5px ${colors.primary}44` : undefined
-                      }}
-                    >
-                      {role}
-                    </button>
-                  );
-                })}
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tight mb-2">{feat.title}</h3>
+                <p className="text-white/40 text-sm leading-relaxed font-sans">{feat.description}</p>
               </div>
-            </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
 
-            <div className="flex items-center gap-3 self-end lg:self-auto">
-              <button className="p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all text-white/60">
-                <SlidersHorizontal size={20} />
-              </button>
-              <button className="p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all text-white/60 flex items-center gap-2 px-4 text-sm font-bold">
-                <ArrowUpDown size={18} /> Sort
-              </button>
+      {/* Live Showcase Section (Featured Cards) */}
+      <section className="container mx-auto px-6 py-24 relative z-10">
+        <div className="max-w-6xl mx-auto flex flex-col gap-12">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Live Featured Cards</h2>
+              <p className="text-white/40 text-sm mt-1 font-sans">Freshly minted assets available for purchase or bidding right now.</p>
             </div>
+            <Link 
+              href="/marketplace" 
+              className="flex items-center gap-2 text-white/50 hover:text-white font-bold text-sm tracking-wider uppercase transition-all font-sans"
+            >
+              See All <ArrowRight size={16} />
+            </Link>
           </div>
 
-          {/* Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 lg:gap-10">
-            {filteredCards.map((card, i) => (
-              <motion.div
-                key={card.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="animate-spin text-purple-500 mb-4" size={32} />
+              <p className="text-white/40 font-bold uppercase tracking-widest text-[10px] font-sans">Scanning Testnet Catalog...</p>
+            </div>
+          ) : featuredListings.length === 0 ? (
+            <div className="py-20 text-center rounded-[32px] border-2 border-dashed border-white/5 bg-[#0a0a0a]/50">
+              <Trophy size={48} className="mx-auto text-white/10 mb-4" />
+              <p className="text-white/30 font-bold text-sm">No Live Listings Available</p>
+              <p className="text-white/20 text-xs mt-1 font-sans">Be the first to mint and list your TCG card in the marketplace!</p>
+              <Link 
+                href="/profile" 
+                className="mt-5 inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 transition-all font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-purple-500/20 font-sans"
               >
-                <NFTCard {...card} />
-              </motion.div>
-            ))}
-          </div>
-
-          {filteredCards.length === 0 && (
-            <div className="py-32 text-center">
-              <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-white/5">
-                <Search size={32} className="text-white/20" />
-              </div>
-              <h3 className="text-2xl font-outfit font-black mb-2 tracking-tight">No cards found</h3>
-              <p className="text-white/40 font-medium">Try adjusting your filters or search terms.</p>
+                Mint My Card Now
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {featuredListings.map((item, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  className="relative group rounded-[32px] bg-[#0a0a0a]/80 border border-white/5 hover:border-white/15 p-4 flex flex-col items-center"
+                >
+                  <Link href={`/card/${item.tokenId}`} className="block w-full">
+                    <div className="flex justify-center transition-transform duration-500 group-hover:scale-[1.02]">
+                      <CardPreview
+                        tokenId={item.tokenId.toString()}
+                        role={{ 
+                          type: item.cardMeta?.discordRole || "ritualist", 
+                          name: item.cardMeta?.discordRole || "Ritualist" 
+                        }}
+                        username={item.cardMeta?.discordUsername || "Ritualist"}
+                        avatar={item.cardMeta?.image || ""}
+                        stats={item.cardMeta?.traits || { messages: "0", level: "1", activity: "New" }}
+                      />
+                    </div>
+                  </Link>
+                  <div className="w-full mt-4 p-2 flex items-center justify-between border-t border-white/5 pt-4">
+                    <div>
+                      <p className="text-[9px] text-white/30 uppercase font-black font-sans">Listed For</p>
+                      <p className="text-sm font-black mt-0.5">{formatEther(item.price)} RITUAL</p>
+                    </div>
+                    <Link 
+                      href={`/card/${item.tokenId}`}
+                      className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 transition-all font-black text-xs uppercase tracking-wider text-center font-sans shadow-md shadow-purple-500/10"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           )}
         </div>
       </section>
 
-      {/* Features Section - Compact */}
-      <section className="w-full py-24 bg-white/[0.02] border-y border-white/5 mt-12">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {[
-              {
-                icon: <Zap className="text-yellow-400" size={24} />,
-                title: "Role-Based Power",
-                description: "Your card type is determined by your Ritual Discord status."
-              },
-              {
-                icon: <Shield className="text-blue-400" size={24} />,
-                title: "Secure Trading",
-                description: "Secured by Ritual testnet smart contracts."
-              },
-              {
-                icon: <Trophy className="text-purple-400" size={24} />,
-                title: "Rare Collections",
-                description: "Collect all 5 role tiers including the elusive Radiant Ritualist."
-              }
-            ].map((feature, i) => (
-              <div key={i} className="flex gap-5">
-                <div className="flex-shrink-0 w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center">
-                  {feature.icon}
-                </div>
-                <div>
-                  <h3 className="text-xl font-outfit font-bold mb-2 tracking-tight">{feature.title}</h3>
-                  <p className="text-white/40 text-sm leading-relaxed">{feature.description}</p>
-                </div>
-              </div>
-            ))}
+      {/* Footer */}
+      <footer className="w-full py-10 bg-black/80 border-t border-white/5 mt-auto relative z-10">
+        <div className="container mx-auto px-6 max-w-6xl flex flex-col md:flex-row items-center justify-between gap-6 text-white/30 text-xs font-sans font-bold uppercase tracking-widest">
+          <p>© 2026 Ritual TCG ecosystem</p>
+          <div className="flex items-center gap-6">
+            <Link href="/marketplace" className="hover:text-white transition-colors">Marketplace</Link>
+            <Link href="/profile" className="hover:text-white transition-colors">Profile Hub</Link>
           </div>
         </div>
-      </section>
+      </footer>
     </div>
   );
 }

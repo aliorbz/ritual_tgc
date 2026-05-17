@@ -16,6 +16,10 @@ export default defineConfig({
     }
   },
   networks: {
+    hardhat: {
+      type: "edr-simulated",
+      chainId: 1979
+    },
     ritual: {
       type: "http",
       url: "https://rpc.ritualfoundation.org",

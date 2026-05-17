@@ -12,6 +12,7 @@ contract RitualTCGCard is ERC721, ERC721Enumerable, Ownable {
     uint256 public constant MINT_FEE = 0.01 ether; // 0.01 RITUAL
 
     mapping(string => bool) public discordIdMinted;
+    mapping(string => mapping(string => bool)) public discordIdRoleMinted;
 
     struct CardMetadata {
         string discordId;
@@ -42,7 +43,7 @@ contract RitualTCGCard is ERC721, ERC721Enumerable, Ownable {
         string memory discordUsername
     ) public payable returns (uint256) {
         require(msg.value == MINT_FEE, "Incorrect mint fee");
-        require(!discordIdMinted[discordId], "Already minted");
+        require(!discordIdRoleMinted[discordId][discordRole], "Already minted this role");
         
         uint256 tokenId = _nextTokenId++;
         _safeMint(to, tokenId);
@@ -53,6 +54,7 @@ contract RitualTCGCard is ERC721, ERC721Enumerable, Ownable {
             discordUsername: discordUsername
         });
 
+        discordIdRoleMinted[discordId][discordRole] = true;
         discordIdMinted[discordId] = true;
 
         return tokenId;
@@ -60,6 +62,20 @@ contract RitualTCGCard is ERC721, ERC721Enumerable, Ownable {
 
     function checkHasMinted(string memory discordId) public view returns (bool) {
         return discordIdMinted[discordId];
+    }
+
+    function checkHasMintedRole(string memory discordId, string memory discordRole) public view returns (bool) {
+        return discordIdRoleMinted[discordId][discordRole];
+    }
+
+    function updateCardData(
+        uint256 tokenId,
+        string memory discordRole,
+        string memory discordUsername
+    ) public {
+        require(ownerOf(tokenId) == msg.sender, "Not owner");
+        cardData[tokenId].discordRole = discordRole;
+        cardData[tokenId].discordUsername = discordUsername;
     }
 
     function withdraw() public onlyOwner {

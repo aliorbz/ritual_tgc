@@ -10,8 +10,8 @@ export const RITUAL_NETWORK = {
     symbol: "RITUAL",
   },
   rpcUrls: {
-    public: { http: ["https://rpc.ritualfoundation.org"] },
-    default: { http: ["https://rpc.ritualfoundation.org"] },
+    public: { http: [process.env.NODE_ENV === "development" ? "http://127.0.0.1:8545" : "https://rpc.ritualfoundation.org"] },
+    default: { http: [process.env.NODE_ENV === "development" ? "http://127.0.0.1:8545" : "https://rpc.ritualfoundation.org"] },
   },
   blockExplorers: {
     default: { name: "Ritual Explorer", url: "https://explorer.ritualfoundation.org" },
@@ -81,7 +81,9 @@ export const ROLE_COLORS = {
 // ── Typed ABIs (parsed for wagmi/viem compatibility) ──────────────────
 export const NFT_ABI = parseAbi([
   "function checkHasMinted(string discordId) public view returns (bool)",
+  "function checkHasMintedRole(string discordId, string discordRole) public view returns (bool)",
   "function mintCard(address to, string discordId, string discordRole, string discordUsername) public payable returns (uint256)",
+  "function updateCardData(uint256 tokenId, string discordRole, string discordUsername) public",
   "function ownerOf(uint256 tokenId) public view returns (address)",
   "function balanceOf(address owner) public view returns (uint256)",
   "function tokenOfOwnerByIndex(address owner, uint256 index) public view returns (uint256)",
@@ -109,11 +111,15 @@ export const MARKETPLACE_ABI = parseAbi([
 
 export const CONTRACTS = {
   NFT: {
-    address: "0x3709CE39819fE72F6eF9d76E7196481219A995Db" as const,
+    address: (process.env.NODE_ENV === "development" 
+      ? "0x5FbDB2315678afecb367f032d93F642f64180aa3" 
+      : "0x3709CE39819fE72F6eF9d76E7196481219A995Db") as const,
     abi: NFT_ABI,
   },
   MARKETPLACE: {
-    address: "0x2a3C8A880398FF6DD8e6F9976c8BE6C8aBef2435" as const,
+    address: (process.env.NODE_ENV === "development" 
+      ? "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512" 
+      : "0x2a3C8A880398FF6DD8e6F9976c8BE6C8aBef2435") as const,
     abi: MARKETPLACE_ABI,
   },
 };

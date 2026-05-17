@@ -203,6 +203,24 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
   const [showOffersModal, setShowOffersModal] = useState(false);
   const tokenId = BigInt(token.tokenId);
 
+  // Custom metadata from local file system API
+  const [metadata, setMetadata] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchLocalMeta() {
+      try {
+        const res = await fetch(`/api/metadata/${token.tokenId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setMetadata(data);
+        }
+      } catch (_) {
+        // Fallback handled gracefully
+      }
+    }
+    fetchLocalMeta();
+  }, [token.tokenId]);
+
   // Check if currently listed
   const { data: listingIdData, refetch: refetchListingId } = useReadContract({
     address: CONTRACTS.MARKETPLACE.address,
@@ -247,7 +265,7 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
   });
   const offerers = (offerersData as string[] | undefined) || [];
 
-  const roleType = (token.discordRole || "ritualist").toLowerCase();
+  const roleType = (metadata?.discordRole || token.discordRole || "ritualist").toLowerCase();
   const colors = (ROLE_COLORS as any)[roleType] || ROLE_COLORS.ritualist;
 
   const handleCancelListing = () => {
@@ -268,13 +286,16 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
         className="flex flex-col items-center"
       >
         <div className="mb-4">
-          <CardPreview
-            username={token.discordUsername}
-            avatar={`https://cdn.discordapp.com/embed/avatars/${parseInt(token.discordId || "0") % 6}.png`}
-            role={{ type: roleType, name: token.discordRole || "Ritualist" }}
-            walletAddress={address as `0x${string}`}
-            tokenId={token.tokenId}
-          />
+          <Link href={`/card/${token.tokenId}`} className="block transition-transform duration-300 hover:scale-[1.02]">
+            <CardPreview
+              username={metadata?.name || token.discordUsername}
+              avatar={metadata?.image || `https://cdn.discordapp.com/embed/avatars/${parseInt(token.discordId || "0") % 6}.png`}
+              role={{ type: roleType, name: metadata?.discordRole || token.discordRole || "Ritualist" }}
+              walletAddress={address as `0x${string}`}
+              tokenId={token.tokenId}
+              stats={metadata?.traits || { messages: "0", level: "1", activity: "New" }}
+            />
+          </Link>
         </div>
 
         <div className="w-[280px] space-y-2">
