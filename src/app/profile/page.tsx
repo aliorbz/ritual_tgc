@@ -21,7 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RITUAL_NETWORK, ROLE_COLORS, CONTRACTS } from "@/lib/config";
 import { Navbar } from "@/components/Navbar";
 import { CardPreview } from "@/components/CardPreview";
-import { getDiscordUserRoles, getMockUserRoles } from "@/lib/actions";
+import { getDiscordUserRoles } from "@/lib/actions";
 import { CollectedCards } from "@/components/CollectedCards";
 
 // Setup dynamic client for metadata setup
@@ -44,9 +44,7 @@ export default function ProfilePage() {
   const { isConnected, address } = useAccount();
   const { data: session } = useSession();
   
-  // Developer Simulator state
-  const [mockSession, setMockSession] = React.useState<any>(null);
-  const activeSession = session || mockSession;
+  const activeSession = session;
 
   const [activeTab, setActiveTab] = React.useState("cards");
   const [userData, setUserData] = React.useState<any>(null);
@@ -177,64 +175,27 @@ export default function ProfilePage() {
   };
 
   // Sync / Fetch roles for session
-  const loadRoles = React.useCallback(async (roleOverride?: string) => {
+  const loadRoles = React.useCallback(async () => {
     if (activeSession) {
       setIsRoleLoading(true);
-      if (mockSession) {
-        // Mock Simulator Fetching
-        const data = await getMockUserRoles(roleOverride || "ritualist");
-        setUserData({
-          role: data.role,
-          stats: {
-            messages: data.stats.messages,
-            level: roleOverride === "mod" ? "50" : roleOverride === "raiden" ? "25" : "5",
-            activity: data.stats.activity
-          },
-          trueUsername: data.username
-        });
+      // Real Discord Syncing
+      const data = await getDiscordUserRoles();
+      if (!data.error) {
+        setUserData(data);
       } else {
-        // Real Discord Syncing
-        const data = await getDiscordUserRoles();
-        if (!data.error) {
-          setUserData(data);
-        } else {
-          setUserData({
-            role: { type: "ritualist", name: "Ritualist" },
-            stats: { messages: "150", level: "3", activity: "Medium" }
-          });
-        }
+        setUserData({
+          role: { type: "ritualist", name: "Ritualist" },
+          stats: { messages: "150", level: "3", activity: "Medium" }
+        });
       }
       setIsRoleLoading(false);
     }
-  }, [activeSession, mockSession]);
+  }, [activeSession]);
 
   React.useEffect(() => {
     loadRoles();
   }, [loadRoles]);
 
-  // Dev Simulator trigger login
-  const handleLaunchMock = (tier: string = "ritualist") => {
-    const roleNames: Record<string, string> = {
-      mod: "MockMod",
-      raiden: "MockRadiant",
-      ritualist: "MockRitualist",
-      ritty: "MockRitty",
-      bitty: "MockBitty"
-    };
-
-    setMockSession({
-      user: {
-        name: roleNames[tier] || "MockRitualist",
-        image: `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 6)}.png`,
-        id: "mock-discord-id-123"
-      }
-    });
-  };
-
-  const handleDisconnectMock = () => {
-    setMockSession(null);
-    setUserData(null);
-  };
 
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance({
     address: address,
@@ -407,37 +368,6 @@ export default function ProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col items-center py-10"
             >
-              {/* Dev Simulator Panel (Visible when simulated session is active) */}
-              {mockSession && (
-                <div className="w-full max-w-lg p-6 rounded-[28px] bg-emerald-500/5 border border-emerald-500/20 backdrop-blur-md mb-12">
-                  <div className="flex items-center gap-2 mb-3 text-emerald-400 font-sans">
-                    <Sparkles size={16} />
-                    <h4 className="text-xs font-black uppercase tracking-wider">Dev Guild Simulator</h4>
-                  </div>
-                  <p className="text-[11px] text-white/40 mb-5 leading-relaxed font-sans font-medium">
-                    This panel simulates upgrading your server role. Change your simulated role level below and watch the card and on-chain rules adapt instantly!
-                  </p>
-                  
-                  <div className="flex items-center gap-3 font-sans">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/30">Active Role tier:</label>
-                    <select
-                      value={userData?.role?.type || "ritualist"}
-                      onChange={(e) => {
-                        const newRole = e.target.value;
-                        loadRoles(newRole);
-                      }}
-                      className="bg-black/80 border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-emerald-500/50 flex-1"
-                    >
-                      <option value="bitty">Bitty (Entry Tier)</option>
-                      <option value="ritty">Ritty (Medium Tier)</option>
-                      <option value="ritualist">Ritualist (High Tier)</option>
-                      <option value="raiden">Radiant (Legendary Tier)</option>
-                      <option value="mod">Mod (Server Master)</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
               <div className="text-center mb-16 max-w-xl">
                 <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter">Mint TCG Card</h2>
                 <p className="text-white/40 leading-relaxed font-medium font-sans text-sm">Verify your live Ritual guild roles and mint your custom card. Once minted, you can customize your layout from the details page.</p>
@@ -453,12 +383,6 @@ export default function ProfilePage() {
                     <p className="text-white/40 mb-10 leading-relaxed font-sans text-sm">Please link your verified Discord account to sync your role and stats.</p>
                     
                     <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                      <button
-                        onClick={() => handleLaunchMock("ritualist")}
-                        className="px-8 py-4 bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/20 text-emerald-400 rounded-2xl font-bold transition-all text-sm flex items-center justify-center gap-2"
-                      >
-                        <Sparkles size={16} /> Dev Simulator
-                      </button>
                       <button
                         onClick={() => signIn("discord")}
                         className="px-8 py-4 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-2xl font-black transition-all shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3"

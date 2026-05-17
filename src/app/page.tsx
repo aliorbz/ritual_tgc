@@ -56,25 +56,42 @@ export default function Home() {
     setIsLoading(true);
     try {
       const client = getClient();
-      const MAX_SCAN = 12; // Scan up to 12 listings for showcase
+
+      // Step 1: Get total minted count
+      const totalSupply = await client.readContract({
+        address: CONTRACTS.NFT.address,
+        abi: CONTRACTS.NFT.abi,
+        functionName: "totalSupply",
+        args: [],
+      }) as bigint;
+
+      const total = Number(totalSupply);
+      if (total === 0) { setFeaturedListings([]); setIsLoading(false); return; }
+
       const list: Listing[] = [];
 
-      for (let i = 1; i <= MAX_SCAN; i++) {
+      // Step 2: Scan each NFT token and check if it's actively listed
+      for (let i = 1; i <= total && list.length < 4; i++) {
         try {
-          const data = await client.readContract({
+          const tokenId = BigInt(i);
+
+          // Check activeListings per card
+          const listing = await client.readContract({
             address: CONTRACTS.MARKETPLACE.address,
             abi: CONTRACTS.MARKETPLACE.abi,
-            functionName: "listings",
-            args: [BigInt(i)],
+            functionName: "activeListings",
+            args: [CONTRACTS.NFT.address, tokenId],
           }) as any;
 
-          if (!data || data.listingId === BigInt(0)) break;
-          if (!data.active) continue;
+          const isActive = Array.isArray(listing) ? listing[5] : listing?.active;
+          const price = Array.isArray(listing) ? listing[4] : listing?.price;
 
-          // Fetch local JSON metadata
+          if (!isActive || !price || price === BigInt(0)) continue;
+
+          // Fetch metadata
           let cardMeta: CardMeta | undefined;
           try {
-            const res = await fetch(`/api/metadata/${data.tokenId}?t=${Date.now()}`);
+            const res = await fetch(`/api/metadata/${tokenId}?t=${Date.now()}`);
             if (res.ok) {
               const meta = await res.json();
               cardMeta = {
@@ -86,15 +103,13 @@ export default function Home() {
               };
             }
           } catch (_) {
-            // On-chain fallback
             try {
               const meta = await client.readContract({
                 address: CONTRACTS.NFT.address,
                 abi: CONTRACTS.NFT.abi,
                 functionName: "cardData",
-                args: [data.tokenId],
+                args: [tokenId],
               }) as any;
-
               cardMeta = {
                 discordId: Array.isArray(meta) ? meta[0] : meta.discordId,
                 discordRole: Array.isArray(meta) ? meta[1] : meta.discordRole,
@@ -103,15 +118,9 @@ export default function Home() {
             } catch (_) {}
           }
 
-          list.push({
-            tokenId: data.tokenId,
-            price: data.price,
-            cardMeta
-          });
-
-          if (list.length >= 4) break; // we only need 4 featured items
+          list.push({ tokenId, price, cardMeta });
         } catch (_) {
-          break;
+          continue;
         }
       }
 
@@ -150,13 +159,13 @@ export default function Home() {
             
             <h1 className="text-5xl md:text-8xl font-black mb-8 leading-[0.95] tracking-tighter uppercase">
               Collect Your <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500 drop-shadow-[0_2px_10px_rgba(16,185,129,0.15)]">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-purple-400 to-purple-500 drop-shadow-[0_2px_20px_rgba(16,185,129,0.3)]">
                 Ritual TCG
               </span>
             </h1>
             
             <p className="text-white/50 text-base md:text-xl max-w-xl mb-10 leading-relaxed font-sans font-medium">
-              The first Discord-native TCG collection. Instantly verify your Ritual server achievements, mint custom high-fidelity NFT collectible cards, and participate in secure escrow bidding.
+              The first Discord-native TCG collection on Ritual Testnet
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-5 w-full justify-center">
@@ -235,7 +244,7 @@ export default function Home() {
 
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="animate-spin text-purple-500 mb-4" size={32} />
+              <Loader2 className="animate-spin text-emerald-500 mb-4" size={32} />
               <p className="text-white/40 font-bold uppercase tracking-widest text-[10px] font-sans">Scanning Testnet Catalog...</p>
             </div>
           ) : featuredListings.length === 0 ? (
@@ -245,7 +254,7 @@ export default function Home() {
               <p className="text-white/20 text-xs mt-1 font-sans">Be the first to mint and list your TCG card in the marketplace!</p>
               <Link 
                 href="/profile" 
-                className="mt-5 inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 transition-all font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-purple-500/20 font-sans"
+                className="mt-5 inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 transition-all font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/20 font-sans"
               >
                 Mint My Card Now
               </Link>
@@ -280,9 +289,9 @@ export default function Home() {
                       <p className="text-[9px] text-white/30 uppercase font-black font-sans">Listed For</p>
                       <p className="text-sm font-black mt-0.5">{formatEther(item.price)} RITUAL</p>
                     </div>
-                    <Link 
+                  <Link 
                       href={`/card/${item.tokenId}`}
-                      className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 transition-all font-black text-xs uppercase tracking-wider text-center font-sans shadow-md shadow-purple-500/10"
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-all font-black text-xs uppercase tracking-wider text-center font-sans shadow-md shadow-emerald-500/10"
                     >
                       View Details
                     </Link>

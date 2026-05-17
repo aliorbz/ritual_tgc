@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Discord from "next-auth/providers/discord";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Discord({
       clientId: process.env.DISCORD_CLIENT_ID,
@@ -14,7 +15,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (account && profile) {
         token.accessToken = account.access_token;
         token.userId = profile.id;
-        token.username = profile.username; // Extract Discord username
+        token.username = profile.username;
       }
       return token;
     },
@@ -22,7 +23,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.accessToken = token.accessToken;
       if (session.user) {
         session.user.id = token.userId;
-        session.user.username = token.username; // Add to session
+        session.user.username = token.username;
       }
       return session;
     },
