@@ -161,14 +161,33 @@ export async function POST(
     const body = await request.json();
     let finalBody = { ...body };
 
-    // 1. If Supabase is configured and photo contains a base64 data URL, upload to Supabase Storage bucket
-    if (isSupabaseConfigured() && supabase && body.image && body.image.startsWith("data:")) {
+    // 1. If Supabase is configured and photo is provided, upload to Supabase Storage bucket
+    if (isSupabaseConfigured() && supabase && body.image) {
       try {
-        const mimeType = body.image.match(/[^:]\w+\/[\w\-+.]+(?=;base64)/)?.[0] || "image/jpeg";
-        const base64Data = body.image.replace(/^data:image\/\w+;base64,/, "");
-        const buffer = Buffer.from(base64Data, "base64");
+        let buffer: Buffer;
+        let mimeType = "image/jpeg";
+        let fileExt = "jpg";
+
+        if (body.image.startsWith("data:")) {
+          mimeType = body.image.match(/[^:]\w+\/[\w\-+.]+(?=;base64)/)?.[0] || "image/jpeg";
+          const base64Data = body.image.replace(/^data:image\/\w+;base64,/, "");
+          buffer = Buffer.from(base64Data, "base64");
+          fileExt = mimeType.split("/")[1] || "jpg";
+        } else if (body.image.startsWith("http")) {
+          // If it is a Discord CDN avatar or any external URL, download and persist it
+          const fetchRes = await fetch(body.image);
+          if (fetchRes.ok) {
+            const arrayBuffer = await fetchRes.arrayBuffer();
+            buffer = Buffer.from(arrayBuffer);
+            mimeType = fetchRes.headers.get("content-type") || "image/jpeg";
+            fileExt = mimeType.split("/")[1] || "jpg";
+          } else {
+            throw new Error(`Failed to download external image: ${fetchRes.statusText}`);
+          }
+        } else {
+          throw new Error("Invalid image format");
+        }
         
-        const fileExt = mimeType.split("/")[1] || "jpg";
         const storagePath = `avatars/${id}.${fileExt}`;
 
         const { data: uploadData, error: uploadErr } = await supabase.storage
@@ -193,7 +212,7 @@ export async function POST(
           debugInfo.publicUrl = publicUrl;
         }
       } catch (uploadErr: any) {
-        console.error("Failed to parse and upload base64 image to Supabase storage:", uploadErr);
+        console.error("Failed to parse/download and upload image to Supabase storage:", uploadErr);
         debugInfo.storageException = uploadErr.message || String(uploadErr);
       }
     }

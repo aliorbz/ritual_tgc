@@ -328,44 +328,20 @@ export default function CardDetails() {
     });
   };
 
-  // ─── Card Image Base64 Upload & Canvas Compressor ─────────────────
+  // ─── Card Image Base64 Upload (Raw Original Image) ─────────────────
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Safety guard to avoid Vercel Serverless Function 4.5MB payload limit
+    if (file.size > 4.5 * 1024 * 1024) {
+      alert("File is too large. Please select an image under 4.5MB to keep it high quality.");
+      return;
+    }
+
     const reader = new FileReader();
     reader.onloadend = () => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const max_size = 800; // 800px avatar is extremely sharp for TCG card display
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > max_size) {
-            height *= max_size / width;
-            width = max_size;
-          }
-        } else {
-          if (height > max_size) {
-            width *= max_size / height;
-            height = max_size;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          // 85% quality JPEG is extremely crisp and high resolution (~20-40KB)
-          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
-          setEditImage(compressedBase64);
-        }
-      };
-      img.src = reader.result as string;
+      setEditImage(reader.result as string);
     };
     reader.readAsDataURL(file);
   };

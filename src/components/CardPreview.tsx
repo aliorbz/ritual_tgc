@@ -58,7 +58,8 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
               <span className="text-white/20 text-xs font-mono">No Image</span>
             </div>
           )}
-          {/* Gradients removed to keep the original photo crisp, bright, and clean */}
+          {/* Subtle dark shading at the bottom of the card face to ensure buttons are extremely legible */}
+          <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
         </div>
 
         {/* Dynamic Card Shimmer effect */}

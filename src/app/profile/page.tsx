@@ -59,15 +59,15 @@ export default function ProfilePage() {
   const { data: hash, writeContract, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
-  // ─── Track per-role mints ──────────────────────────────────────────
+  // ─── Track global user mint limit (exactly 1 card per Discord account) ───
   const discordId = activeSession?.user?.id || (activeSession ? "mock-discord-id-123" : "");
   const currentRoleName = userData?.role?.name || "Ritualist";
   
   const { data: hasMintedData, refetch: refetchHasMinted } = useReadContract({
     address: CONTRACTS.NFT.address,
     abi: CONTRACTS.NFT.abi,
-    functionName: "checkHasMintedRole",
-    args: [discordId, currentRoleName],
+    functionName: "checkHasMinted",
+    args: [discordId],
     query: { enabled: !!discordId && !!userData },
   });
   const hasMinted = Boolean(hasMintedData);
@@ -163,39 +163,15 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Safety guard to avoid Vercel Serverless Function 4.5MB payload limit
+    if (file.size > 4.5 * 1024 * 1024) {
+      alert("File is too large. Please select an image under 4.5MB to keep it high quality.");
+      return;
+    }
+
     const reader = new FileReader();
     reader.onloadend = () => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const max_size = 800; // 800px avatar is extremely sharp for TCG card display
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > max_size) {
-            height *= max_size / width;
-            width = max_size;
-          }
-        } else {
-          if (height > max_size) {
-            width *= max_size / height;
-            height = max_size;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          // 85% quality JPEG is extremely crisp and high resolution (~20-40KB)
-          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
-          setCustomImage(compressedBase64);
-        }
-      };
-      img.src = reader.result as string;
+      setCustomImage(reader.result as string);
     };
     reader.readAsDataURL(file);
   };
@@ -533,11 +509,11 @@ export default function ProfilePage() {
 
                     {/* Already minted banner */}
                     {hasMinted && (
-                      <div className="w-full max-w-sm mb-4 px-5 py-3 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center gap-3 font-sans">
-                        <CheckCircle2 size={18} className="text-green-400 flex-shrink-0" />
+                      <div className="w-full max-w-sm mb-4 px-5 py-3 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center gap-3 font-sans">
+                        <CheckCircle2 size={18} className="text-yellow-400 flex-shrink-0" />
                         <div className="text-left">
-                          <p className="text-sm font-black text-green-400">Tier Already Minted</p>
-                          <p className="text-xs text-white/40">Your Discord ID has already minted for this specific role tier ({currentRoleName}).</p>
+                          <p className="text-sm font-black text-yellow-400">Card Already Minted</p>
+                          <p className="text-xs text-white/40">Your Discord account has already minted a card. If you recently got a role upgrade, you can directly sync it by clicking the Sync button inside your Collected Card details!</p>
                         </div>
                       </div>
                     )}
@@ -587,8 +563,8 @@ export default function ProfilePage() {
                         </button>
                         {" "}manually!
                       </p>
-                      <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest mt-1">
-                        uploaded image can't be changed afterwards
+                      <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">
+                        (PFP can be changed anytime in TCG profile details)
                       </p>
                     </div>
                   </div>
