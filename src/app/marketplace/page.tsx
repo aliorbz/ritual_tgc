@@ -362,77 +362,41 @@ export default function MarketplacePage() {
     try {
       const client = getClient();
 
-      // ── Step 1: Fetch all active listings ────────────────────────
-      const MAX_LISTING_SCAN = 200;
-      const activeListings: Listing[] = [];
-
-      for (let i = 1; i <= MAX_LISTING_SCAN; i++) {
-        try {
-          const data = await client.readContract({
+      // ── Step 1: Scan listings in parallel ────────────────────────
+      const SCAN_LIMIT = 50; // Probe up to 50 listing IDs in parallel
+      const listingPromises = [];
+      for (let i = 1; i <= SCAN_LIMIT; i++) {
+        listingPromises.push(
+          client.readContract({
             address: CONTRACTS.MARKETPLACE.address,
             abi: CONTRACTS.MARKETPLACE.abi,
             functionName: "listings",
             args: [BigInt(i)],
-          }) as unknown as { listingId: bigint; nftAddress: string; tokenId: bigint; seller: string; price: bigint; active: boolean };
+          }).catch(() => null)
+        );
+      }
+      
+      const rawListings = await Promise.all(listingPromises);
+      const activeListings: Listing[] = [];
 
-          if (!data || data.listingId === BigInt(0)) break;
-          if (!data.active) continue;
+      for (const raw of rawListings) {
+        if (!raw) continue;
+        const data = raw as { listingId: bigint; nftAddress: string; tokenId: bigint; seller: string; price: bigint; active: boolean };
+        if (data.listingId === BigInt(0) || !data.active) continue;
 
-          const listing: Listing = {
-            listingId: data.listingId,
-            nftAddress: data.nftAddress,
-            tokenId: data.tokenId,
-            seller: data.seller,
-            price: data.price,
-            active: data.active,
-          };
-
-          // Fetch local JSON metadata or fall back to on-chain
-          try {
-            const res = await fetch(`/api/metadata/${listing.tokenId}`);
-            if (res.ok) {
-              const meta = await res.json();
-              listing.cardMeta = {
-                discordId: meta.discordId,
-                discordRole: meta.discordRole,
-                discordUsername: meta.name,
-                image: meta.image,
-                traits: meta.traits,
-                description: meta.description
-              };
-            } else {
-              throw new Error("Metadata API error");
-            }
-          } catch (_) {
-            // Fallback to on-chain raw cardData
-            try {
-              const meta = await client.readContract({
-                address: CONTRACTS.NFT.address,
-                abi: CONTRACTS.NFT.abi,
-                functionName: "cardData",
-                args: [listing.tokenId],
-              }) as unknown as { discordId: string; discordRole: string; discordUsername: string };
-
-              listing.cardMeta = {
-                discordId: Array.isArray(meta) ? (meta as any)[0] : meta.discordId,
-                discordRole: Array.isArray(meta) ? (meta as any)[1] : meta.discordRole,
-                discordUsername: Array.isArray(meta) ? (meta as any)[2] : meta.discordUsername,
-              };
-            } catch (err) {
-              console.error(`Failed to load card metadata for ${listing.tokenId}`, err);
-            }
-          }
-
-          activeListings.push(listing);
-        } catch (_) {
-          break;
-        }
+        activeListings.push({
+          listingId: data.listingId,
+          nftAddress: data.nftAddress,
+          tokenId: data.tokenId,
+          seller: data.seller,
+          price: data.price,
+          active: data.active,
+        });
       }
 
-      setListings(activeListings);
       const listedTokenIds = new Set(activeListings.map(l => l.tokenId.toString()));
 
-      // ── Step 2: Fetch all minted cards ──
+      // ── Step 2: Fetch all minted cards ───────────────────────────
       let totalSupply = 0;
       try {
         const ts = await client.readContract({
@@ -444,67 +408,112 @@ export default function MarketplacePage() {
         totalSupply = Number(ts);
       } catch (_) {}
 
-      const unlisted: MintedCard[] = [];
-
+      const unlistedPromises = [];
       for (let i = 0; i < totalSupply; i++) {
-        try {
-          const tokenId = await client.readContract({
-            address: CONTRACTS.NFT.address,
-            abi: CONTRACTS.NFT.abi,
-            functionName: "tokenByIndex",
-            args: [BigInt(i)],
-          }) as bigint;
-
-          if (listedTokenIds.has(tokenId.toString())) continue;
-
-          const owner = await client.readContract({
-            address: CONTRACTS.NFT.address,
-            abi: CONTRACTS.NFT.abi,
-            functionName: "ownerOf",
-            args: [tokenId],
-          }) as string;
-
-          const card: MintedCard = { tokenId, owner };
-
-          // Fetch local JSON metadata or fall back to on-chain
-          try {
-            const res = await fetch(`/api/metadata/${tokenId}`);
-            if (res.ok) {
-              const meta = await res.json();
-              card.cardMeta = {
-                discordId: meta.discordId,
-                discordRole: meta.discordRole,
-                discordUsername: meta.name,
-                image: meta.image,
-                traits: meta.traits,
-                description: meta.description
-              };
-            } else {
-              throw new Error("Metadata API error");
-            }
-          } catch (_) {
+        unlistedPromises.push(
+          (async () => {
             try {
-              const meta = await client.readContract({
+              const tokenId = await client.readContract({
                 address: CONTRACTS.NFT.address,
                 abi: CONTRACTS.NFT.abi,
-                functionName: "cardData",
+                functionName: "tokenByIndex",
+                args: [BigInt(i)],
+              }) as bigint;
+
+              if (listedTokenIds.has(tokenId.toString())) return null;
+
+              const owner = await client.readContract({
+                address: CONTRACTS.NFT.address,
+                abi: CONTRACTS.NFT.abi,
+                functionName: "ownerOf",
                 args: [tokenId],
-              }) as unknown as { discordId: string; discordRole: string; discordUsername: string };
+              }) as string;
 
-              card.cardMeta = {
-                discordId: Array.isArray(meta) ? (meta as any)[0] : meta.discordId,
-                discordRole: Array.isArray(meta) ? (meta as any)[1] : meta.discordRole,
-                discordUsername: Array.isArray(meta) ? (meta as any)[2] : meta.discordUsername,
-              };
-            } catch (_) {}
-          }
-
-          unlisted.push(card);
-        } catch (_) {
-          continue;
-        }
+              return { tokenId, owner };
+            } catch (_) {
+              return null;
+            }
+          })()
+        );
       }
 
+      const unlistedResults = await Promise.all(unlistedPromises);
+      const unlisted: MintedCard[] = unlistedResults.filter((x): x is MintedCard => x !== null);
+
+      // ── Step 3: Fetch metadata for all resolved assets in parallel ─
+      const fetchListingMeta = activeListings.map(async (listing) => {
+        try {
+          const res = await fetch(`/api/metadata/${listing.tokenId}`);
+          if (res.ok) {
+            const meta = await res.json();
+            listing.cardMeta = {
+              discordId: meta.discordId,
+              discordRole: meta.discordRole,
+              discordUsername: meta.name,
+              image: meta.image,
+              traits: meta.traits,
+              description: meta.description
+            };
+          } else {
+            throw new Error();
+          }
+        } catch (_) {
+          try {
+            const meta = await client.readContract({
+              address: CONTRACTS.NFT.address,
+              abi: CONTRACTS.NFT.abi,
+              functionName: "cardData",
+              args: [listing.tokenId],
+            }) as unknown as { discordId: string; discordRole: string; discordUsername: string };
+
+            listing.cardMeta = {
+              discordId: Array.isArray(meta) ? (meta as any)[0] : meta.discordId,
+              discordRole: Array.isArray(meta) ? (meta as any)[1] : meta.discordRole,
+              discordUsername: Array.isArray(meta) ? (meta as any)[2] : meta.discordUsername,
+            };
+          } catch (err) {
+            console.error(`Failed to load card metadata for ${listing.tokenId}`, err);
+          }
+        }
+      });
+
+      const fetchUnlistedMeta = unlisted.map(async (card) => {
+        try {
+          const res = await fetch(`/api/metadata/${card.tokenId}`);
+          if (res.ok) {
+            const meta = await res.json();
+            card.cardMeta = {
+              discordId: meta.discordId,
+              discordRole: meta.discordRole,
+              discordUsername: meta.name,
+              image: meta.image,
+              traits: meta.traits,
+              description: meta.description
+            };
+          } else {
+            throw new Error();
+          }
+        } catch (_) {
+          try {
+            const meta = await client.readContract({
+              address: CONTRACTS.NFT.address,
+              abi: CONTRACTS.NFT.abi,
+              functionName: "cardData",
+              args: [card.tokenId],
+            }) as unknown as { discordId: string; discordRole: string; discordUsername: string };
+
+            card.cardMeta = {
+              discordId: Array.isArray(meta) ? (meta as any)[0] : meta.discordId,
+              discordRole: Array.isArray(meta) ? (meta as any)[1] : meta.discordRole,
+              discordUsername: Array.isArray(meta) ? (meta as any)[2] : meta.discordUsername,
+            };
+          } catch (_) {}
+        }
+      });
+
+      await Promise.all([...fetchListingMeta, ...fetchUnlistedMeta]);
+
+      setListings(activeListings);
       setUnlistedCards(unlisted);
     } catch (e) {
       console.error("Failed to fetch marketplace data", e);
