@@ -68,6 +68,22 @@ export const ROLE_COLORS = {
     bg: "bg-purple-500/20",
     border: "border-purple-500/30"
   },
+  raiden: {
+    primary: "#FFD700",
+    secondary: "#FDB931",
+    glow: "rgba(255, 215, 0, 0.7)",
+    text: "text-yellow-400",
+    bg: "bg-yellow-500/20",
+    border: "border-yellow-500/50"
+  },
+  seeker: {
+    primary: "#94A3B8",
+    secondary: "#CBD5E1",
+    glow: "rgba(148, 163, 184, 0.4)",
+    text: "text-slate-400",
+    bg: "bg-slate-500/10",
+    border: "border-slate-500/20"
+  },
   bitty: {
     primary: "#00BFFF",
     secondary: "#0000FF",

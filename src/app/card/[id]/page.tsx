@@ -27,6 +27,8 @@ import {
   X
 } from "lucide-react";
 import Link from "next/link";
+import { useSession, signIn } from "next-auth/react";
+import { getDiscordUserRoles } from "@/lib/actions";
 import { CONTRACTS, ROLE_COLORS, RITUAL_NETWORK } from "@/lib/config";
 import { Navbar } from "@/components/Navbar";
 import { CardPreview } from "@/components/CardPreview";
@@ -56,9 +58,12 @@ export default function CardDetails() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const { address } = useAccount();
+  const { data: activeSession } = useSession();
 
   const [activeTab, setActiveTab] = useState("info");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [pendingSyncPayload, setPendingSyncPayload] = useState<any>(null);
 
   // Card details states
   const [metadata, setMetadata] = useState<any>(null);
@@ -251,15 +256,37 @@ export default function CardDetails() {
   // Refresh data on transaction success
   useEffect(() => {
     if (isSuccess) {
-      loadCardData();
-      setIsOfferModalOpen(false);
-      setIsEditModalOpen(false);
-      // Only close list modal if the user is already approved (so they just successfully listed/delisted)
-      if (isApproved) {
-        setIsListModalOpen(false);
-      }
+      (async () => {
+        if (pendingSyncPayload) {
+          try {
+            const res = await fetch(`/api/metadata/${id}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(pendingSyncPayload),
+            });
+            if (res.ok) {
+              setMetadata(pendingSyncPayload);
+              alert("Successfully synced your live Discord stats and role on-chain and in metadata!");
+            } else {
+              alert("Successfully synced on-chain, but failed to write off-chain metadata files.");
+            }
+          } catch (err) {
+            console.error("Failed to update synced metadata files:", err);
+          } finally {
+            setPendingSyncPayload(null);
+            setIsSyncing(false);
+          }
+        }
+        loadCardData();
+        setIsOfferModalOpen(false);
+        setIsEditModalOpen(false);
+        // Only close list modal if the user is already approved (so they just successfully listed/delisted)
+        if (isApproved) {
+          setIsListModalOpen(false);
+        }
+      })();
     }
-  }, [isSuccess, loadCardData, isApproved]);
+  }, [isSuccess, loadCardData, isApproved, pendingSyncPayload, id]);
 
   const isOwner = address?.toLowerCase() === owner?.toLowerCase();
   const colors = roleColors(metadata?.discordRole);
@@ -415,25 +442,69 @@ export default function CardDetails() {
     }
   };
 
-  // ─── Sync with Discord Stats Simulator ────────────────────────────
-  const handleSyncStats = () => {
-    // Simulates syncing fresh stats in this mocked environment
-    const upgradedTraits = {
-      ...metadata?.traits,
-      messageCount: (parseInt(metadata?.traits?.messageCount || "0") + 150).toString(),
-      level: (parseInt(metadata?.traits?.level || "1") + 1).toString(),
-      activity: "Ultra Master"
-    };
+  // ─── Live Discord & Smart Contract Sync ──────────────────────────
+  const handleSyncStats = async () => {
+    if (!activeSession) {
+      const confirmLogin = confirm("Please connect your Discord account first to sync your card stats and role. Would you like to connect now?");
+      if (confirmLogin) {
+        signIn("discord");
+      }
+      return;
+    }
 
-    const updatedPayload = {
-      ...metadata,
-      traits: upgradedTraits
-    };
+    if (!isOwner) {
+      alert("Only the owner of this card can sync it with their Discord stats!");
+      return;
+    }
 
-    setMetadata(updatedPayload);
-    setEditName(updatedPayload.name || "");
-    setEditDescription(updatedPayload.description || "");
-    setEditImage(updatedPayload.image || "");
+    setIsSyncing(true);
+    try {
+      // 1. Fetch live roles from Discord actions
+      const data = await getDiscordUserRoles();
+      
+      if (data.error && !data.role) {
+        alert(`Discord verification failed: ${data.error}. Sync aborted.`);
+        setIsSyncing(false);
+        return;
+      }
+
+      const newRole = data.role?.name || "Seeker";
+      const newUsername = data.trueUsername || data.username || metadata?.discordUsername || "Explorer";
+
+      // 2. Prep metadata updates
+      const upgradedTraits = {
+        ...metadata?.traits,
+        messageCount: data.stats?.messages || "0",
+        level: data.stats?.level || "1",
+        topRole: newRole,
+        activity: data.stats?.activity || "None"
+      };
+
+      const updatedPayload = {
+        ...metadata,
+        name: newUsername,
+        discordRole: newRole,
+        discordUsername: newUsername,
+        image: metadata?.customImage || data.avatar || metadata?.image,
+        traits: upgradedTraits
+      };
+
+      // Store payload in state to write on transaction success
+      setPendingSyncPayload(updatedPayload);
+
+      // 3. Trigger smart contract updateCardData
+      writeContract({
+        address: CONTRACTS.NFT.address,
+        abi: CONTRACTS.NFT.abi,
+        functionName: "updateCardData",
+        args: [BigInt(id), newRole, newUsername],
+      });
+
+    } catch (err: any) {
+      console.error("Critical error during Discord sync:", err);
+      alert(`An error occurred while syncing: ${err.message || String(err)}`);
+      setIsSyncing(false);
+    }
   };
 
   const userHasActiveOffer = offersList.some(o => o.offerer.toLowerCase() === address?.toLowerCase());
@@ -560,9 +631,24 @@ export default function CardDetails() {
                           </button>
                           <button
                             onClick={handleSyncStats}
-                            className="py-4 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg"
+                            disabled={isSyncing || (isPending && pendingSyncPayload !== null) || (isConfirming && pendingSyncPayload !== null)}
+                            className="py-4 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <RefreshCw size={18} /> Sync Discord Stats
+                            {(isSyncing || (isPending && pendingSyncPayload !== null)) ? (
+                              <>
+                                <Loader2 size={18} className="animate-spin text-emerald-400" />
+                                Syncing...
+                              </>
+                            ) : (isConfirming && pendingSyncPayload !== null) ? (
+                              <>
+                                <Loader2 size={18} className="animate-spin text-yellow-400" />
+                                Confirming On-chain...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw size={18} /> Sync Discord Stats
+                              </>
+                            )}
                           </button>
                         </div>
                       ) : (
@@ -576,9 +662,24 @@ export default function CardDetails() {
                           </button>
                           <button
                             onClick={handleSyncStats}
-                            className="py-4 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg"
+                            disabled={isSyncing || (isPending && pendingSyncPayload !== null) || (isConfirming && pendingSyncPayload !== null)}
+                            className="py-4 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <RefreshCw size={18} /> Sync Discord Stats
+                            {(isSyncing || (isPending && pendingSyncPayload !== null)) ? (
+                              <>
+                                <Loader2 size={18} className="animate-spin text-emerald-400" />
+                                Syncing...
+                              </>
+                            ) : (isConfirming && pendingSyncPayload !== null) ? (
+                              <>
+                                <Loader2 size={18} className="animate-spin text-yellow-400" />
+                                Confirming On-chain...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw size={18} /> Sync Discord Stats
+                              </>
+                            )}
                           </button>
                         </>
                       )

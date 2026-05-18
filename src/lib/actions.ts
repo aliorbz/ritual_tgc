@@ -25,8 +25,11 @@ export async function getDiscordUserRoles() {
     
     if (!ritualGuild) {
       return { 
-        ineligible: true, 
-        error: "You are not a member of the Ritual Discord server. Please join the server to mint your card." 
+        role: { id: "seeker", type: "seeker", name: "Seeker" },
+        username: session.user?.name,
+        trueUsername: session.user?.name,
+        avatar: session.user?.image,
+        stats: { messages: "0", joins: "New", activity: "None" }
       };
     }
 
@@ -43,8 +46,11 @@ export async function getDiscordUserRoles() {
 
     if (!memberResponse.ok) {
       return { 
-        ineligible: true, 
-        error: "Could not verify your Ritual Discord role. Please make sure you authorized members access." 
+        role: { id: "seeker", type: "seeker", name: "Seeker" },
+        username: session.user?.name,
+        trueUsername: session.user?.name,
+        avatar: session.user?.image,
+        stats: { messages: "0", joins: "New", activity: "None" }
       };
     }
 
@@ -62,13 +68,7 @@ export async function getDiscordUserRoles() {
     ];
 
     const highestRole = rolePriority.find(rp => roles.includes(rp.id));
-
-    if (!highestRole) {
-      return { 
-        ineligible: true, 
-        error: "You do not meet the requirements to mint. You must hold one of the following roles in the Ritual Discord: Bitty, Ritty, Ritualist, Radiant Ritualist, or Mod." 
-      };
-    }
+    const resolvedRole = highestRole || { id: "seeker", type: "seeker", name: "Seeker" };
 
     const mockStats: Record<string, any> = {
       mod: { messages: "5.4k", joins: "Jan 2024", activity: "Master" },
@@ -76,18 +76,25 @@ export async function getDiscordUserRoles() {
       ritualist: { messages: "450", joins: "May 2024", activity: "High" },
       ritty: { messages: "120", joins: "Aug 2024", activity: "Medium" },
       bitty: { messages: "45", joins: "Oct 2024", activity: "Low" },
+      seeker: { messages: "0", joins: "New", activity: "None" },
     };
 
     return { 
-      role: highestRole,
+      role: resolvedRole,
       username: session.user?.name,
       trueUsername: trueUsername,
       avatar: session.user?.image,
-      stats: mockStats[highestRole.type] || mockStats.ritualist
+      stats: mockStats[resolvedRole.type] || mockStats.seeker
     };
   } catch (err) {
     console.error(err);
-    return { error: "An error occurred while fetching Discord data." };
+    return { 
+      role: { id: "seeker", type: "seeker", name: "Seeker" },
+      username: session?.user?.name || "Explorer",
+      trueUsername: session?.user?.name || "explorer",
+      avatar: session?.user?.image,
+      stats: { messages: "0", joins: "New", activity: "None" }
+    };
   }
 }
 
