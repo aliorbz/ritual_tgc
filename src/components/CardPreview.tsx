@@ -38,7 +38,7 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
       <div 
         ref={cardRef}
         id="card-capture-area"
-        className="relative w-full max-w-[178px] xs:max-w-[198px] sm:max-w-[280px] h-[245px] xs:h-[270px] sm:h-[390px] rounded-2xl sm:rounded-[32px] overflow-hidden bg-[#050505] border-2 shadow-2xl flex flex-col justify-between p-2.5 sm:p-4 transition-transform duration-500 hover:scale-[1.02] border-white/10"
+        className="relative w-full max-w-[178px] xs:max-w-[198px] sm:w-[280px] h-[245px] xs:h-[270px] sm:h-[390px] rounded-2xl sm:rounded-[32px] overflow-hidden bg-[#050505] border-2 shadow-2xl flex flex-col justify-between p-2.5 sm:p-4 transition-transform duration-500 hover:scale-[1.02] border-white/10"
         style={{ 
           boxShadow: `0 20px 40px -15px ${colors.glow}`,
           borderColor: isRadiant ? "#FFD700" : colors.primary

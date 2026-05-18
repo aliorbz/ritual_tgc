@@ -96,117 +96,111 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative group rounded-[32px] overflow-hidden bg-[#0a0a0a]/80 border border-white/5 hover:border-white/20 transition-all duration-500"
-      style={{ 
-        boxShadow: `0 10px 30px -15px ${colors.glow}`,
-        backdropFilter: "blur(12px)"
-      }}
+      className="relative group w-full flex justify-start sm:justify-center"
     >
       {/* Dynamic Card Display */}
-      <Link href={`/card/${card.tokenId}`} className="block p-4">
-        <div className="flex justify-center transition-transform duration-500 group-hover:scale-[1.02]">
-          <CardPreview
-            tokenId={card.tokenId.toString()}
-            role={{ 
-              type: card.cardMeta?.discordRole || "ritualist", 
-              name: card.cardMeta?.discordRole || "Ritualist" 
-            }}
-            username={card.cardMeta?.discordUsername || "Ritualist"}
-            avatar={card.cardMeta?.image || ""}
-            stats={card.cardMeta?.traits || { messages: "0", level: "1", activity: "New" }}
-          >
-            {/* Custom interactive action buttons directly on card face! */}
-            <div className="space-y-1 sm:space-y-1.5 w-full">
-              {/* Listed Price Badge directly inside card face */}
-              {card.isListed && card.price && (
-                <div className="text-left pl-1 sm:pl-1.5 mb-0.5 sm:mb-1">
-                  <span 
-                    className="text-[14px] xs:text-base sm:text-3xl font-black uppercase tracking-tight text-white font-sans"
-                    style={{ textShadow: "0 2px 4px rgba(0,0,0,1), 0 4px 12px rgba(0,0,0,1)" }}
-                  >
-                    {formatEther(card.price)} RITUAL
-                  </span>
-                </div>
-              )}
+      <Link href={`/card/${card.tokenId}`} className="block transition-transform duration-500 hover:scale-[1.02]">
+        <CardPreview
+          tokenId={card.tokenId.toString()}
+          role={{ 
+            type: card.cardMeta?.discordRole || "ritualist", 
+            name: card.cardMeta?.discordRole || "Ritualist" 
+          }}
+          username={card.cardMeta?.discordUsername || "Ritualist"}
+          avatar={card.cardMeta?.image || ""}
+          stats={card.cardMeta?.traits || { messages: "0", level: "1", activity: "New" }}
+        >
+          {/* Custom interactive action buttons directly on card face! */}
+          <div className="space-y-1 sm:space-y-1.5 w-full">
+            {/* Listed Price Badge directly inside card face */}
+            {card.isListed && card.price && (
+              <div className="text-left pl-1 sm:pl-1.5 mb-0.5 sm:mb-1">
+                <span 
+                  className="text-[14px] xs:text-base sm:text-3xl font-black uppercase tracking-tight text-white font-sans"
+                  style={{ textShadow: "0 2px 4px rgba(0,0,0,1), 0 4px 12px rgba(0,0,0,1)" }}
+                >
+                  {formatEther(card.price)} RITUAL
+                </span>
+              </div>
+            )}
 
-              {isOwner ? (
-                card.isListed ? (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onCancelListing(card);
-                    }}
-                    className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5"
-                  >
-                    <Trash2 size={12} className="hidden sm:inline" /> Cancel List
-                  </button>
-                ) : (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onList(card);
-                    }}
-                    className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:brightness-110"
-                    style={{ 
-                      borderColor: colors.primary, 
-                      backgroundColor: `${colors.primary}1A`, 
-                      color: colors.primary 
-                    }}
-                  >
-                    <Tag size={12} className="hidden sm:inline" /> List Card
-                  </button>
-                )
+            {isOwner ? (
+              card.isListed ? (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onCancelListing(card);
+                  }}
+                  className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5"
+                >
+                  <Trash2 size={12} className="hidden sm:inline" /> Cancel List
+                </button>
               ) : (
-                card.isListed ? (
-                  <div className="flex gap-1.5 sm:gap-2 w-full">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onOffer(card);
-                      }}
-                      className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.04] backdrop-blur-md text-white/80 hover:text-white hover:bg-white/[0.08] transition-all text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-lg"
-                    >
-                      Offer
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onBuy(card);
-                      }}
-                      className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-black text-[8px] xs:text-[9px] sm:text-[10px] uppercase tracking-wider text-black transition-all hover:brightness-110"
-                      style={{ 
-                        backgroundColor: colors.primary,
-                        boxShadow: `0 4px 12px ${colors.glow}`
-                      }}
-                    >
-                      Buy
-                    </button>
-                  </div>
-                ) : (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onList(card);
+                  }}
+                  className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:brightness-110"
+                  style={{ 
+                    borderColor: colors.primary, 
+                    backgroundColor: `${colors.primary}1A`, 
+                    color: colors.primary 
+                  }}
+                >
+                  <Tag size={12} className="hidden sm:inline" /> List Card
+                </button>
+              )
+            ) : (
+              card.isListed ? (
+                <div className="flex gap-1.5 sm:gap-2 w-full">
                   <button
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       onOffer(card);
                     }}
-                    className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:brightness-110"
+                    className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.04] backdrop-blur-md text-white/80 hover:text-white hover:bg-white/[0.08] transition-all text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-lg"
+                  >
+                    Offer
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onBuy(card);
+                    }}
+                    className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-black text-[8px] xs:text-[9px] sm:text-[10px] uppercase tracking-wider text-black transition-all hover:brightness-110"
                     style={{ 
-                      borderColor: colors.primary, 
-                      backgroundColor: `${colors.primary}1A`, 
-                      color: colors.primary 
+                      backgroundColor: colors.primary,
+                      boxShadow: `0 4px 12px ${colors.glow}`
                     }}
                   >
-                    <Hand size={12} className="hidden sm:inline" /> Make Offer
+                    Buy
                   </button>
-                )
-              )}
-            </div>
-          </CardPreview>
-        </div>
+                </div>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onOffer(card);
+                  }}
+                  className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:brightness-110"
+                  style={{ 
+                    borderColor: colors.primary, 
+                    backgroundColor: `${colors.primary}1A`, 
+                    color: colors.primary 
+                  }}
+                >
+                  <Hand size={12} className="hidden sm:inline" /> Make Offer
+                </button>
+              )
+            )}
+          </div>
+        </CardPreview>
       </Link>
     </motion.div>
   );
