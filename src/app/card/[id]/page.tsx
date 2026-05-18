@@ -63,7 +63,7 @@ export default function CardDetails() {
   const [activeTab, setActiveTab] = useState("info");
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [pendingSyncPayload, setPendingSyncPayload] = useState<any>(null);
+  const [syncStep, setSyncStep] = useState<"idle" | "checking" | "confirming" | "metadata">("idle");
 
   // Card details states
   const [metadata, setMetadata] = useState<any>(null);
@@ -88,7 +88,7 @@ export default function CardDetails() {
   const [editDescription, setEditDescription] = useState("");
   const [editImage, setEditImage] = useState("");
 
-  const { data: txHash, writeContract, isPending } = useWriteContract();
+  const { data: txHash, writeContract, writeContractAsync, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash });
 
   // ─── Fetch All Card Data On-chain and Off-chain ──────────────────────
@@ -256,37 +256,15 @@ export default function CardDetails() {
   // Refresh data on transaction success
   useEffect(() => {
     if (isSuccess) {
-      (async () => {
-        if (pendingSyncPayload) {
-          try {
-            const res = await fetch(`/api/metadata/${id}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(pendingSyncPayload),
-            });
-            if (res.ok) {
-              setMetadata(pendingSyncPayload);
-              alert("Successfully synced your live Discord stats and role on-chain and in metadata!");
-            } else {
-              alert("Successfully synced on-chain, but failed to write off-chain metadata files.");
-            }
-          } catch (err) {
-            console.error("Failed to update synced metadata files:", err);
-          } finally {
-            setPendingSyncPayload(null);
-            setIsSyncing(false);
-          }
-        }
-        loadCardData();
-        setIsOfferModalOpen(false);
-        setIsEditModalOpen(false);
-        // Only close list modal if the user is already approved (so they just successfully listed/delisted)
-        if (isApproved) {
-          setIsListModalOpen(false);
-        }
-      })();
+      loadCardData();
+      setIsOfferModalOpen(false);
+      setIsEditModalOpen(false);
+      // Only close list modal if the user is already approved (so they just successfully listed/delisted)
+      if (isApproved) {
+        setIsListModalOpen(false);
+      }
     }
-  }, [isSuccess, loadCardData, isApproved, pendingSyncPayload, id]);
+  }, [isSuccess, loadCardData, isApproved]);
 
   const isOwner = address?.toLowerCase() === owner?.toLowerCase();
   const colors = roleColors(metadata?.discordRole);
@@ -458,6 +436,7 @@ export default function CardDetails() {
     }
 
     setIsSyncing(true);
+    setSyncStep("checking");
     try {
       // 1. Fetch live roles from Discord actions
       const data = await getDiscordUserRoles();
@@ -465,6 +444,7 @@ export default function CardDetails() {
       if (data.error && !data.role) {
         alert(`Discord verification failed: ${data.error}. Sync aborted.`);
         setIsSyncing(false);
+        setSyncStep("idle");
         return;
       }
 
@@ -489,21 +469,44 @@ export default function CardDetails() {
         traits: upgradedTraits
       };
 
-      // Store payload in state to write on transaction success
-      setPendingSyncPayload(updatedPayload);
+      setSyncStep("confirming");
 
       // 3. Trigger smart contract updateCardData
-      writeContract({
+      const hash = await writeContractAsync({
         address: CONTRACTS.NFT.address,
         abi: CONTRACTS.NFT.abi,
         functionName: "updateCardData",
         args: [BigInt(id), newRole, newUsername],
       });
 
+      setSyncStep("metadata");
+
+      // 4. Wait for confirmation on-chain
+      const client = getClient();
+      await client.waitForTransactionReceipt({ hash });
+
+      // 5. Update local database/metadata files
+      const res = await fetch(`/api/metadata/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedPayload),
+      });
+
+      if (res.ok) {
+        setMetadata(updatedPayload);
+        alert("Successfully synced your live Discord stats and role on-chain and in metadata!");
+      } else {
+        alert("Successfully synced on-chain, but failed to write off-chain metadata files.");
+      }
+
+      loadCardData();
+
     } catch (err: any) {
       console.error("Critical error during Discord sync:", err);
       alert(`An error occurred while syncing: ${err.message || String(err)}`);
+    } finally {
       setIsSyncing(false);
+      setSyncStep("idle");
     }
   };
 
