@@ -1,158 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { 
   Zap, 
   Shield, 
-  Trophy, 
   ArrowRight, 
-  Sparkles, 
   Layers, 
-  Flame, 
-  Loader2 
+  Flame 
 } from "lucide-react";
-import { parseEther, formatEther, createPublicClient, http } from "viem";
-import { CONTRACTS, RITUAL_NETWORK } from "@/lib/config";
 import { Navbar } from "@/components/Navbar";
-import { CardPreview } from "@/components/CardPreview";
-
-// ─── Dynamic RPC Chain definition ───────────────────────────────────
-const RITUAL_CHAIN = {
-  id: RITUAL_NETWORK.id,
-  name: RITUAL_NETWORK.name,
-  nativeCurrency: RITUAL_NETWORK.nativeCurrency,
-  rpcUrls: { 
-    default: { 
-      http: [process.env.NODE_ENV === "development" ? "http://127.0.0.1:8545" : "https://rpc.ritualfoundation.org"] 
-    } 
-  },
-} as const;
-
-function getClient() {
-  return createPublicClient({ chain: RITUAL_CHAIN as any, transport: http() });
-}
-
-type CardMeta = { 
-  discordId: string; 
-  discordRole: string; 
-  discordUsername: string;
-  image?: string;
-  traits?: any;
-};
-
-type Listing = {
-  tokenId: bigint;
-  cardMeta?: CardMeta;
-  price: bigint;
-  isListed?: boolean;
-};
 
 export default function Home() {
-  const [featuredListings, setFeaturedListings] = useState<Listing[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchFeatured = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const client = getClient();
-
-      // Step 1: Get total minted count
-      const totalSupply = await client.readContract({
-        address: CONTRACTS.NFT.address,
-        abi: CONTRACTS.NFT.abi,
-        functionName: "totalSupply",
-        args: [],
-      }) as bigint;
-
-      const total = Number(totalSupply);
-      if (total === 0) { setFeaturedListings([]); setIsLoading(false); return; }
-
-      const list: Listing[] = [];
-
-      // Step 2: Scan tokens backwards (most recent first) up to 4 cards
-      for (let i = total; i >= 1 && list.length < 4; i--) {
-        try {
-          const tokenId = BigInt(i);
-
-          // Query marketplace contract for active listing ID of this token
-          const listingId = await client.readContract({
-            address: CONTRACTS.MARKETPLACE.address,
-            abi: CONTRACTS.MARKETPLACE.abi,
-            functionName: "activeListings",
-            args: [CONTRACTS.NFT.address, tokenId],
-          }) as bigint;
-
-          let price = BigInt(0);
-          let isListed = false;
-
-          if (listingId > BigInt(0)) {
-            const rawListing = await client.readContract({
-              address: CONTRACTS.MARKETPLACE.address,
-              abi: CONTRACTS.MARKETPLACE.abi,
-              functionName: "listings",
-              args: [listingId],
-            }) as any;
-
-            const isArray = Array.isArray(rawListing);
-            const active = isArray ? rawListing[5] : rawListing.active;
-            const rawPrice = isArray ? rawListing[4] : rawListing.price;
-
-            if (active) {
-              price = rawPrice;
-              isListed = true;
-            }
-          }
-
-          // Fetch metadata
-          let cardMeta: CardMeta | undefined;
-          try {
-            const res = await fetch(`/api/metadata/${tokenId}?t=${Date.now()}`);
-            if (res.ok) {
-              const meta = await res.json();
-              cardMeta = {
-                discordId: meta.discordId,
-                discordRole: meta.discordRole,
-                discordUsername: meta.name,
-                image: meta.image,
-                traits: meta.traits
-              };
-            }
-          } catch (_) {
-            try {
-              const meta = await client.readContract({
-                address: CONTRACTS.NFT.address,
-                abi: CONTRACTS.NFT.abi,
-                functionName: "cardData",
-                args: [tokenId],
-              }) as any;
-              cardMeta = {
-                discordId: Array.isArray(meta) ? meta[0] : meta.discordId,
-                discordRole: Array.isArray(meta) ? meta[1] : meta.discordRole,
-                discordUsername: Array.isArray(meta) ? meta[2] : meta.discordUsername,
-              };
-            } catch (_) {}
-          }
-
-          list.push({ tokenId, price, cardMeta, isListed });
-        } catch (_) {
-          continue;
-        }
-      }
-
-      setFeaturedListings(list);
-    } catch (e) {
-      console.error("Failed to load featured listings", e);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchFeatured();
-  }, [fetchFeatured]);
-
   return (
     <div className="flex flex-col min-h-screen bg-[#060606] text-white overflow-hidden font-['Outfit',sans-serif] relative">
       <Navbar />
@@ -173,7 +33,7 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative w-full py-28 lg:py-40 flex items-center justify-center z-10">
+      <section className="relative w-full pt-16 pb-24 lg:pt-20 lg:pb-32 flex items-center justify-center z-10">
         {/* Background Glowing Blobs */}
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
         <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
@@ -248,88 +108,131 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Live Showcase Section (Featured Cards) */}
-      <section className="container mx-auto px-6 py-24 relative z-10">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <div className="flex items-center justify-between">
+      {/* Live Showcase Section (Featured Users Scrolling Tickers) */}
+      <section className="py-24 relative z-10 w-full overflow-hidden border-t border-white/5 bg-black/20">
+        <div className="container mx-auto px-6 max-w-6xl mb-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Live Featured Cards</h2>
-              <p className="text-white/40 text-sm mt-1 font-sans">Freshly minted assets available for purchase or bidding right now.</p>
+              <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest mb-3 inline-block uppercase font-sans">
+                Dynamic Active Collectors
+              </span>
+              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">Live Featured Users</h2>
+              <p className="text-white/40 text-sm mt-2 font-sans max-w-lg">
+                Dynamic server participants and collection collectors climbing the ranks in real-time.
+              </p>
             </div>
             <Link 
               href="/marketplace" 
-              className="flex items-center gap-2 text-white/50 hover:text-white font-bold text-sm tracking-wider uppercase transition-all font-sans"
+              className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-bold text-sm tracking-wider uppercase transition-all font-sans"
             >
-              See All <ArrowRight size={16} />
+              Enter Arena <ArrowRight size={16} />
             </Link>
           </div>
+        </div>
 
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="animate-spin text-emerald-500 mb-4" size={32} />
-              <p className="text-white/40 font-bold uppercase tracking-widest text-[10px] font-sans">Scanning Testnet Catalog...</p>
-            </div>
-          ) : featuredListings.length === 0 ? (
-            <div className="py-20 text-center rounded-[32px] border-2 border-dashed border-white/5 bg-[#0a0a0a]/50">
-              <Trophy size={48} className="mx-auto text-white/10 mb-4" />
-              <p className="text-white/30 font-bold text-sm">No Live Listings Available</p>
-              <p className="text-white/20 text-xs mt-1 font-sans">Be the first to mint and list your TCG card in the marketplace!</p>
-              <Link 
-                href="/profile" 
-                className="mt-5 inline-block px-6 py-3 bg-emerald-600 hover:bg-emerald-700 transition-all font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/20 font-sans"
-              >
-                Mint My Card Now
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {featuredListings.map((item, i) => (
-                <motion.div 
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                  className="relative group rounded-[32px] bg-[#0a0a0a]/80 border border-white/5 hover:border-white/15 p-4 flex flex-col items-center"
-                >
-                  <Link href={`/card/${item.tokenId}`} className="block w-full">
-                    <div className="flex justify-center transition-transform duration-500 group-hover:scale-[1.02]">
-                      <CardPreview
-                        tokenId={item.tokenId.toString()}
-                        role={{ 
-                          type: item.cardMeta?.discordRole || "ritualist", 
-                          name: item.cardMeta?.discordRole || "Ritualist" 
-                        }}
-                        username={item.cardMeta?.discordUsername || "Ritualist"}
-                        avatar={item.cardMeta?.image || ""}
-                        stats={item.cardMeta?.traits || { messages: "0", level: "1", activity: "New" }}
-                      />
-                    </div>
-                  </Link>
-                  <div className="w-full mt-4 p-2 flex items-center justify-between border-t border-white/5 pt-4 font-sans">
-                    <div>
-                      <p className="text-[9px] text-white/30 uppercase font-black tracking-wider">
-                        {item.isListed ? "Listed For" : "Status"}
-                      </p>
-                      <p className="text-sm font-black mt-0.5 text-white">
-                        {item.isListed ? `${formatEther(item.price)} RITUAL` : "Unlisted"}
-                      </p>
-                    </div>
-                    <Link 
-                      href={`/card/${item.tokenId}`}
-                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-all font-black text-xs uppercase tracking-wider text-center shadow-md shadow-emerald-500/10 text-white font-sans"
-                    >
-                      {item.isListed ? "Buy" : "Offer"}
-                    </Link>
-                  </div>
-                </motion.div>
+        {/* Scrolling Tickers Wrapper */}
+        <div className="space-y-8 w-full select-none pointer-events-auto">
+          
+          {/* Row 1: Left to Right */}
+          <div className="relative flex overflow-x-hidden w-full mask-gradient">
+            <div className="animate-marquee-right flex gap-6 px-3">
+              {[
+                "03e4e0d39ad4be7c979df0203e1353e7.webp",
+                "0fa37a8a29d958a9f42386eadaac3d7c.webp",
+                "310c7bea13fe6d427785457dee751057.webp",
+                "31617ac03e7c98f4cb98d3a814ef438a.webp",
+                "3df123bf9b7c3b7aef0959c1455bbb05.webp",
+                "51c8191614655b21f1b01deca7bfe97c.webp"
+              ].map((img, i) => (
+                <div key={`r1-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
+                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
+                </div>
               ))}
             </div>
-          )}
+            <div className="animate-marquee-right flex gap-6 px-3" aria-hidden="true">
+              {[
+                "03e4e0d39ad4be7c979df0203e1353e7.webp",
+                "0fa37a8a29d958a9f42386eadaac3d7c.webp",
+                "310c7bea13fe6d427785457dee751057.webp",
+                "31617ac03e7c98f4cb98d3a814ef438a.webp",
+                "3df123bf9b7c3b7aef0959c1455bbb05.webp",
+                "51c8191614655b21f1b01deca7bfe97c.webp"
+              ].map((img, i) => (
+                <div key={`r1-dup-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
+                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 2: Right to Left */}
+          <div className="relative flex overflow-x-hidden w-full mask-gradient">
+            <div className="animate-marquee-left flex gap-6 px-3">
+              {[
+                "603d519ca49971f22e8e9f6e2077c9d7.webp",
+                "6262d48ae6e296a5a6e210f03185d2e2.webp",
+                "6559259dd85e77f0b66464113b91eae0.webp",
+                "760a6408b6097db26632c9a258fb61c4.webp",
+                "808c490a63b2b60bb37e5d48a2948288.webp",
+                "96e0ee90f489fa71a22817906f95cb43.webp",
+                "a_b4d8119d7f3d52cb9ec256a613674880.gif"
+              ].map((img, i) => (
+                <div key={`r2-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
+                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
+                </div>
+              ))}
+            </div>
+            <div className="animate-marquee-left flex gap-6 px-3" aria-hidden="true">
+              {[
+                "603d519ca49971f22e8e9f6e2077c9d7.webp",
+                "6262d48ae6e296a5a6e210f03185d2e2.webp",
+                "6559259dd85e77f0b66464113b91eae0.webp",
+                "760a6408b6097db26632c9a258fb61c4.webp",
+                "808c490a63b2b60bb37e5d48a2948288.webp",
+                "96e0ee90f489fa71a22817906f95cb43.webp",
+                "a_b4d8119d7f3d52cb9ec256a613674880.gif"
+              ].map((img, i) => (
+                <div key={`r2-dup-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
+                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 3: Left to Right */}
+          <div className="relative flex overflow-x-hidden w-full mask-gradient">
+            <div className="animate-marquee-right flex gap-6 px-3">
+              {[
+                "bc28a9ea56b0d4b42413c8befaa2a863.webp",
+                "d335f04ae7d658be3391ee772e19665e.webp",
+                "d42ad307bd918b95744f2593d8cb7a5e.webp",
+                "de2a3e5ed2df5c5fb63ec4042610c0ff.webp",
+                "e613113b257ebae1d442daf159ac6e45.webp",
+                "ecf863e6cc9a8a1b2c130bf9658c5324.webp"
+              ].map((img, i) => (
+                <div key={`r3-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
+                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
+                </div>
+              ))}
+            </div>
+            <div className="animate-marquee-right flex gap-6 px-3" aria-hidden="true">
+              {[
+                "bc28a9ea56b0d4b42413c8befaa2a863.webp",
+                "d335f04ae7d658be3391ee772e19665e.webp",
+                "d42ad307bd918b95744f2593d8cb7a5e.webp",
+                "de2a3e5ed2df5c5fb63ec4042610c0ff.webp",
+                "e613113b257ebae1d442daf159ac6e45.webp",
+                "ecf863e6cc9a8a1b2c130bf9658c5324.webp"
+              ].map((img, i) => (
+                <div key={`r3-dup-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
+                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </section>
-
-
     </div>
   );
 }
