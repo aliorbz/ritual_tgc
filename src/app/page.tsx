@@ -137,11 +137,26 @@ export default function Home() {
   }, [fetchFeatured]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#060606] text-white overflow-hidden font-['Outfit',sans-serif]">
+    <div className="flex flex-col min-h-screen bg-[#060606] text-white overflow-hidden font-['Outfit',sans-serif] relative">
       <Navbar />
 
+      {/* Infinite Video Background */}
+      <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <video
+          className="w-full h-full object-cover opacity-15 filter blur-[8px]"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source src="/media/ritualvid.mp4" type="video/mp4" />
+        </video>
+        {/* Dark overlay with gradients to integrate the video smoothly */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#060606]/30 via-[#060606]/70 to-[#060606]" />
+      </div>
+
       {/* Hero Section */}
-      <section className="relative w-full py-28 lg:py-40 flex items-center justify-center">
+      <section className="relative w-full py-28 lg:py-40 flex items-center justify-center z-10">
         {/* Background Glowing Blobs */}
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
         <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
