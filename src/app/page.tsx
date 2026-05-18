@@ -33,7 +33,7 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative w-full pt-16 pb-24 lg:pt-20 lg:pb-32 flex items-center justify-center z-10">
+      <section className="relative w-full pt-28 pb-24 lg:pt-36 lg:pb-32 flex items-center justify-center z-10">
         {/* Background Glowing Blobs */}
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
         <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
@@ -144,9 +144,12 @@ export default function Home() {
                 "3df123bf9b7c3b7aef0959c1455bbb05.webp",
                 "51c8191614655b21f1b01deca7bfe97c.webp"
               ].map((img, i) => (
-                <div key={`r1-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
-                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
-                </div>
+                <img 
+                  key={`r1-${i}`} 
+                  src={`/listimg/${img}`} 
+                  alt="User Avatar" 
+                  className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-[24px] flex-shrink-0" 
+                />
               ))}
             </div>
             <div className="animate-marquee-right flex gap-6 px-3" aria-hidden="true">
@@ -158,9 +161,12 @@ export default function Home() {
                 "3df123bf9b7c3b7aef0959c1455bbb05.webp",
                 "51c8191614655b21f1b01deca7bfe97c.webp"
               ].map((img, i) => (
-                <div key={`r1-dup-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
-                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
-                </div>
+                <img 
+                  key={`r1-dup-${i}`} 
+                  src={`/listimg/${img}`} 
+                  alt="User Avatar" 
+                  className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-[24px] flex-shrink-0" 
+                />
               ))}
             </div>
           </div>
@@ -177,9 +183,12 @@ export default function Home() {
                 "96e0ee90f489fa71a22817906f95cb43.webp",
                 "a_b4d8119d7f3d52cb9ec256a613674880.gif"
               ].map((img, i) => (
-                <div key={`r2-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
-                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
-                </div>
+                <img 
+                  key={`r2-${i}`} 
+                  src={`/listimg/${img}`} 
+                  alt="User Avatar" 
+                  className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-[24px] flex-shrink-0" 
+                />
               ))}
             </div>
             <div className="animate-marquee-left flex gap-6 px-3" aria-hidden="true">
@@ -192,9 +201,12 @@ export default function Home() {
                 "96e0ee90f489fa71a22817906f95cb43.webp",
                 "a_b4d8119d7f3d52cb9ec256a613674880.gif"
               ].map((img, i) => (
-                <div key={`r2-dup-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
-                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
-                </div>
+                <img 
+                  key={`r2-dup-${i}`} 
+                  src={`/listimg/${img}`} 
+                  alt="User Avatar" 
+                  className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-[24px] flex-shrink-0" 
+                />
               ))}
             </div>
           </div>
@@ -210,9 +222,12 @@ export default function Home() {
                 "e613113b257ebae1d442daf159ac6e45.webp",
                 "ecf863e6cc9a8a1b2c130bf9658c5324.webp"
               ].map((img, i) => (
-                <div key={`r3-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
-                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
-                </div>
+                <img 
+                  key={`r3-${i}`} 
+                  src={`/listimg/${img}`} 
+                  alt="User Avatar" 
+                  className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-[24px] flex-shrink-0" 
+                />
               ))}
             </div>
             <div className="animate-marquee-right flex gap-6 px-3" aria-hidden="true">
@@ -224,9 +239,12 @@ export default function Home() {
                 "e613113b257ebae1d442daf159ac6e45.webp",
                 "ecf863e6cc9a8a1b2c130bf9658c5324.webp"
               ].map((img, i) => (
-                <div key={`r3-dup-${i}`} className="w-28 h-28 md:w-32 md:h-32 bg-[#0a0a0a]/60 border border-white/5 rounded-[24px] p-2 flex-shrink-0 flex items-center justify-center backdrop-blur-md transition-all hover:border-emerald-500/30 hover:scale-105 duration-300">
-                  <img src={`/listimg/${img}`} alt="User Avatar" className="w-full h-full object-cover rounded-[18px]" />
-                </div>
+                <img 
+                  key={`r3-dup-${i}`} 
+                  src={`/listimg/${img}`} 
+                  alt="User Avatar" 
+                  className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-[24px] flex-shrink-0" 
+                />
               ))}
             </div>
           </div>
