@@ -299,8 +299,8 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col items-center"
       >
-        <div className="mb-4">
-          <Link href={`/card/${token.tokenId}`} className="block transition-transform duration-300 hover:scale-[1.02]">
+        <div className="mb-4 w-full sm:w-auto flex justify-center">
+          <Link href={`/card/${token.tokenId}`} className="block transition-transform duration-300 hover:scale-[1.02] w-full sm:w-auto">
             <CardPreview
               username={metadata?.name || token.discordUsername}
               avatar={metadata?.image || `https://cdn.discordapp.com/embed/avatars/${parseInt(token.discordId || "0") % 6}.png`}

@@ -26,7 +26,7 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
   const activity = stats?.activity || (stats as any)?.activity || "New";
 
   return (
-    <div className="relative group select-none">
+    <div className="relative group select-none w-full sm:w-auto">
       {/* Dynamic Glow Aura */}
       <div 
         className="absolute -inset-1 blur-[35px] rounded-[36px] opacity-20 group-hover:opacity-75 transition-all duration-700" 

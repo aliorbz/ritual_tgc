@@ -99,7 +99,7 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
       className="relative group w-full flex justify-start sm:justify-center"
     >
       {/* Dynamic Card Display */}
-      <Link href={`/card/${card.tokenId}`} className="block transition-transform duration-500 hover:scale-[1.02]">
+      <Link href={`/card/${card.tokenId}`} className="block transition-transform duration-500 hover:scale-[1.02] w-full sm:w-auto">
         <CardPreview
           tokenId={card.tokenId.toString()}
           role={{ 
