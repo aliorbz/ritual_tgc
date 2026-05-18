@@ -73,19 +73,31 @@ export function Navbar() {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-3 w-56 bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-10 p-2"
+                      className="absolute right-0 mt-3 w-56 bg-black/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-10 p-2 font-sans"
                     >
-                      <div className="px-4 py-3 border-b border-white/5 mb-2">
-                        <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest mb-1">Account</p>
-                        <p className="text-xs font-mono text-purple-400 truncate">{address}</p>
-                      </div>
+                      {session?.user?.name && (
+                        <div className="px-4 py-3 border-b border-white/5 mb-1.5 flex items-center gap-3">
+                          {session?.user?.image ? (
+                            <img src={session.user.image} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                              <User size={14} className="text-white/40" />
+                            </div>
+                          )}
+                          <div className="overflow-hidden">
+                            <p className="text-xs font-black truncate text-white uppercase tracking-tight leading-none">{session.user.name}</p>
+                            <p className="text-[9px] font-bold text-emerald-400 tracking-widest uppercase mt-1">Discord synced</p>
+                          </div>
+                        </div>
+                      )}
 
                       <Link 
                         href="/profile" 
                         onClick={() => setIsDropdownOpen(false)}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                        className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-black uppercase tracking-wider text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all"
                       >
-                        <User size={18} /> Profile
+                        <span className="flex items-center gap-3"><User size={16} /> Profile Hub</span>
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Mint</span>
                       </Link>
 
                       <button 
@@ -93,9 +105,9 @@ export function Navbar() {
                           disconnect();
                           setIsDropdownOpen(false);
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-400/60 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-red-400/60 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all mt-1"
                       >
-                        <LogOut size={18} /> Disconnect
+                        <LogOut size={16} /> Disconnect
                       </button>
                     </motion.div>
                   </>

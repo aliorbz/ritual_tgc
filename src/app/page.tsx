@@ -94,7 +94,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
-              className="p-8 rounded-3xl bg-[#0a0a0a] border border-white/5 flex flex-col gap-5 hover:border-white/10 transition-all duration-300"
+              className="p-8 rounded-[32px] bg-white/[0.02] border border-white/10 backdrop-blur-xl flex flex-col gap-5 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-300 shadow-2xl"
             >
               <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
                 {feat.icon}
@@ -116,7 +116,7 @@ export default function Home() {
               <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest mb-3 inline-block uppercase font-sans">
                 Dynamic Active Collectors
               </span>
-              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">Live Featured Users</h2>
+              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">Featured Users</h2>
               <p className="text-white/40 text-sm mt-2 font-sans max-w-lg">
                 Dynamic server participants and collection collectors climbing the ranks in real-time.
               </p>
@@ -138,11 +138,15 @@ export default function Home() {
             <div className="animate-marquee-right flex gap-6 px-3">
               {[
                 "03e4e0d39ad4be7c979df0203e1353e7.webp",
+                "0a92e23a280629e2b44ca48a931515da.webp",
                 "0fa37a8a29d958a9f42386eadaac3d7c.webp",
                 "310c7bea13fe6d427785457dee751057.webp",
                 "31617ac03e7c98f4cb98d3a814ef438a.webp",
                 "3df123bf9b7c3b7aef0959c1455bbb05.webp",
-                "51c8191614655b21f1b01deca7bfe97c.webp"
+                "43e0a6d1ef4fccd4f075ff7454e6282d.webp",
+                "4d36fbe585cbdd26d34e1219cba16a81.webp",
+                "51c8191614655b21f1b01deca7bfe97c.webp",
+                "603d519ca49971f22e8e9f6e2077c9d7.webp"
               ].map((img, i) => (
                 <img 
                   key={`r1-${i}`} 
@@ -155,11 +159,15 @@ export default function Home() {
             <div className="animate-marquee-right flex gap-6 px-3" aria-hidden="true">
               {[
                 "03e4e0d39ad4be7c979df0203e1353e7.webp",
+                "0a92e23a280629e2b44ca48a931515da.webp",
                 "0fa37a8a29d958a9f42386eadaac3d7c.webp",
                 "310c7bea13fe6d427785457dee751057.webp",
                 "31617ac03e7c98f4cb98d3a814ef438a.webp",
                 "3df123bf9b7c3b7aef0959c1455bbb05.webp",
-                "51c8191614655b21f1b01deca7bfe97c.webp"
+                "43e0a6d1ef4fccd4f075ff7454e6282d.webp",
+                "4d36fbe585cbdd26d34e1219cba16a81.webp",
+                "51c8191614655b21f1b01deca7bfe97c.webp",
+                "603d519ca49971f22e8e9f6e2077c9d7.webp"
               ].map((img, i) => (
                 <img 
                   key={`r1-dup-${i}`} 
@@ -175,13 +183,16 @@ export default function Home() {
           <div className="relative flex overflow-x-hidden w-full mask-gradient">
             <div className="animate-marquee-left flex gap-6 px-3">
               {[
-                "603d519ca49971f22e8e9f6e2077c9d7.webp",
                 "6262d48ae6e296a5a6e210f03185d2e2.webp",
                 "6559259dd85e77f0b66464113b91eae0.webp",
                 "760a6408b6097db26632c9a258fb61c4.webp",
+                "794a932f2532c7425f196748481f050e.webp",
+                "7a87c165bdb22f63d3845fecc803bd7a.webp",
+                "7e2c71557364de8bcc8171c704f056e3.webp",
                 "808c490a63b2b60bb37e5d48a2948288.webp",
-                "96e0ee90f489fa71a22817906f95cb43.webp",
-                "a_b4d8119d7f3d52cb9ec256a613674880.gif"
+                "821ec6165f928b2e88cc51acf4639be4.webp",
+                "8700fbd611af5055c8325dc2fcd31fcf.webp",
+                "96e0ee90f489fa71a22817906f95cb43.webp"
               ].map((img, i) => (
                 <img 
                   key={`r2-${i}`} 
@@ -193,13 +204,16 @@ export default function Home() {
             </div>
             <div className="animate-marquee-left flex gap-6 px-3" aria-hidden="true">
               {[
-                "603d519ca49971f22e8e9f6e2077c9d7.webp",
                 "6262d48ae6e296a5a6e210f03185d2e2.webp",
                 "6559259dd85e77f0b66464113b91eae0.webp",
                 "760a6408b6097db26632c9a258fb61c4.webp",
+                "794a932f2532c7425f196748481f050e.webp",
+                "7a87c165bdb22f63d3845fecc803bd7a.webp",
+                "7e2c71557364de8bcc8171c704f056e3.webp",
                 "808c490a63b2b60bb37e5d48a2948288.webp",
-                "96e0ee90f489fa71a22817906f95cb43.webp",
-                "a_b4d8119d7f3d52cb9ec256a613674880.gif"
+                "821ec6165f928b2e88cc51acf4639be4.webp",
+                "8700fbd611af5055c8325dc2fcd31fcf.webp",
+                "96e0ee90f489fa71a22817906f95cb43.webp"
               ].map((img, i) => (
                 <img 
                   key={`r2-dup-${i}`} 
@@ -215,10 +229,14 @@ export default function Home() {
           <div className="relative flex overflow-x-hidden w-full mask-gradient">
             <div className="animate-marquee-right flex gap-6 px-3">
               {[
+                "994c8ad7a94929c366ebf05cf7442692.webp",
+                "a_b4d8119d7f3d52cb9ec256a613674880.gif",
                 "bc28a9ea56b0d4b42413c8befaa2a863.webp",
                 "d335f04ae7d658be3391ee772e19665e.webp",
                 "d42ad307bd918b95744f2593d8cb7a5e.webp",
+                "d8e453da6a5d2ad7c6a4dfbfdcded733.webp",
                 "de2a3e5ed2df5c5fb63ec4042610c0ff.webp",
+                "e43c3792b138c28317a2d2708f022733.webp",
                 "e613113b257ebae1d442daf159ac6e45.webp",
                 "ecf863e6cc9a8a1b2c130bf9658c5324.webp"
               ].map((img, i) => (
@@ -232,10 +250,14 @@ export default function Home() {
             </div>
             <div className="animate-marquee-right flex gap-6 px-3" aria-hidden="true">
               {[
+                "994c8ad7a94929c366ebf05cf7442692.webp",
+                "a_b4d8119d7f3d52cb9ec256a613674880.gif",
                 "bc28a9ea56b0d4b42413c8befaa2a863.webp",
                 "d335f04ae7d658be3391ee772e19665e.webp",
                 "d42ad307bd918b95744f2593d8cb7a5e.webp",
+                "d8e453da6a5d2ad7c6a4dfbfdcded733.webp",
                 "de2a3e5ed2df5c5fb63ec4042610c0ff.webp",
+                "e43c3792b138c28317a2d2708f022733.webp",
                 "e613113b257ebae1d442daf159ac6e45.webp",
                 "ecf863e6cc9a8a1b2c130bf9658c5324.webp"
               ].map((img, i) => (

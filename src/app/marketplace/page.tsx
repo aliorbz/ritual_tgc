@@ -727,9 +727,6 @@ export default function MarketplacePage() {
         {/* Header */}
         <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest mb-3 inline-block uppercase font-sans">
-              Ritual TCG Trading Arena
-            </span>
             <h1 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter text-white">Marketplace</h1>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-[11px] font-bold text-white/30 uppercase tracking-widest font-sans">
               <span>5% Royalty fee</span>
@@ -743,8 +740,8 @@ export default function MarketplacePage() {
 
         {/* Dynamic Search and Filter Controls Panel */}
         <div className="flex flex-col lg:flex-row lg:items-center gap-6 p-6 rounded-[32px] bg-white/5 border border-white/10 backdrop-blur-md mb-12">
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
-            <div className="relative w-full sm:max-w-md group">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
+            <div className="relative w-full flex-grow group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors" size={20} />
               <input 
                 type="text" 
@@ -756,7 +753,7 @@ export default function MarketplacePage() {
             </div>
             
             {/* Role Filter Dropdown */}
-            <div className="relative flex items-center bg-black/40 border border-white/5 rounded-2xl px-4 py-3.5 gap-2 font-sans w-full sm:w-auto">
+            <div className="relative flex items-center bg-black/40 border border-white/5 rounded-2xl px-4 py-3.5 gap-2 font-sans w-full sm:w-auto flex-shrink-0">
               <SlidersHorizontal size={16} className="text-white/40" />
               <select
                 value={filter}

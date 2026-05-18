@@ -235,8 +235,17 @@ export default function ProfilePage() {
       <Navbar />
 
       {/* Cover Area */}
-      <div className="h-64 w-full bg-gradient-to-r from-purple-900/10 via-indigo-900/10 to-black relative border-b border-white/5">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+      <div className="h-64 w-full relative border-b border-white/5 overflow-hidden z-0 bg-[#050505]">
+        <video
+          className="absolute inset-0 w-full h-full object-cover opacity-35 filter blur-[3px]"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source src="/media/ritualvid.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/45 to-[#050505]" />
       </div>
 
       <div className="container mx-auto px-6">
