@@ -143,7 +143,7 @@ export default function Home() {
       {/* Infinite Video Background */}
       <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <video
-          className="w-full h-full object-cover opacity-40 filter blur-[6px]"
+          className="w-full h-full object-cover opacity-40 filter blur-[4px]"
           autoPlay
           loop
           muted
