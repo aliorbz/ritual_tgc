@@ -631,18 +631,15 @@ export default function CardDetails() {
                           </button>
                           <button
                             onClick={handleSyncStats}
-                            disabled={isSyncing || (isPending && pendingSyncPayload !== null) || (isConfirming && pendingSyncPayload !== null)}
+                            disabled={isSyncing}
                             className="py-4 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {(isSyncing || (isPending && pendingSyncPayload !== null)) ? (
+                            {isSyncing ? (
                               <>
                                 <Loader2 size={18} className="animate-spin text-emerald-400" />
-                                Syncing...
-                              </>
-                            ) : (isConfirming && pendingSyncPayload !== null) ? (
-                              <>
-                                <Loader2 size={18} className="animate-spin text-yellow-400" />
-                                Confirming On-chain...
+                                {syncStep === "checking" ? "Checking Discord..." :
+                                 syncStep === "confirming" ? "Confirming On-chain..." :
+                                 syncStep === "metadata" ? "Saving Sync..." : "Syncing..."}
                               </>
                             ) : (
                               <>
@@ -662,18 +659,15 @@ export default function CardDetails() {
                           </button>
                           <button
                             onClick={handleSyncStats}
-                            disabled={isSyncing || (isPending && pendingSyncPayload !== null) || (isConfirming && pendingSyncPayload !== null)}
+                            disabled={isSyncing}
                             className="py-4 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {(isSyncing || (isPending && pendingSyncPayload !== null)) ? (
+                            {isSyncing ? (
                               <>
                                 <Loader2 size={18} className="animate-spin text-emerald-400" />
-                                Syncing...
-                              </>
-                            ) : (isConfirming && pendingSyncPayload !== null) ? (
-                              <>
-                                <Loader2 size={18} className="animate-spin text-yellow-400" />
-                                Confirming On-chain...
+                                {syncStep === "checking" ? "Checking Discord..." :
+                                 syncStep === "confirming" ? "Confirming On-chain..." :
+                                 syncStep === "metadata" ? "Saving Sync..." : "Syncing..."}
                               </>
                             ) : (
                               <>
