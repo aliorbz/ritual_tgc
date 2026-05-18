@@ -743,9 +743,9 @@ export default function MarketplacePage() {
 
         {/* Dynamic Search and Filter Controls Panel */}
         <div 
-          className="flex flex-col lg:flex-row lg:items-center gap-4 p-4 rounded-[28px] border border-white/10 backdrop-blur-2xl mb-12 shadow-2xl"
+          className="flex flex-col lg:flex-row lg:items-center gap-4 p-4 rounded-[28px] border border-white/15 backdrop-blur-3xl mb-12 shadow-2xl"
           style={{
-            background: "linear-gradient(135deg, rgba(57, 255, 20, 0.06) 0%, rgba(192, 132, 252, 0.06) 100%)"
+            background: "linear-gradient(135deg, rgba(57, 255, 20, 0.65) 0%, rgba(192, 132, 252, 0.65) 100%)"
           }}
         >
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
