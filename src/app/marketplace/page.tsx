@@ -167,7 +167,7 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                         e.stopPropagation();
                         onOffer(card);
                       }}
-                      className="flex-1 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-white/70 hover:text-white transition-all text-[10px] font-black uppercase tracking-wider"
+                      className="flex-1 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.04] backdrop-blur-md text-white/80 hover:text-white hover:bg-white/[0.08] transition-all text-[10px] font-black uppercase tracking-wider shadow-lg"
                     >
                       Offer
                     </button>
@@ -742,26 +742,31 @@ export default function MarketplacePage() {
         </div>
 
         {/* Dynamic Search and Filter Controls Panel */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-6 p-6 rounded-[32px] bg-white/5 border border-white/10 backdrop-blur-md mb-12">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
+        <div 
+          className="flex flex-col lg:flex-row lg:items-center gap-4 p-4 rounded-[28px] border border-white/10 backdrop-blur-2xl mb-12 shadow-2xl"
+          style={{
+            background: "linear-gradient(135deg, rgba(57, 255, 20, 0.06) 0%, rgba(192, 132, 252, 0.06) 100%)"
+          }}
+        >
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
             <div className="relative w-full flex-grow group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors" size={20} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors" size={18} />
               <input 
                 type="text" 
                 placeholder="Search by name, ID, or role..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-black/40 border border-white/5 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-sans"
+                className="w-full bg-black/40 border border-white/5 rounded-xl py-2.5 pl-11 pr-4 text-sm font-medium focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-sans"
               />
             </div>
             
             {/* Role Filter Dropdown */}
-            <div className="relative flex items-center bg-black/40 border border-white/5 rounded-2xl px-4 py-3.5 gap-2 font-sans w-full sm:w-auto flex-shrink-0">
-              <SlidersHorizontal size={16} className="text-white/40" />
+            <div className="relative flex items-center bg-black/40 border border-white/5 rounded-xl px-4 py-2.5 gap-2 font-sans w-full sm:w-auto flex-shrink-0">
+              <SlidersHorizontal size={14} className="text-white/40" />
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="bg-transparent text-sm font-bold text-white focus:outline-none cursor-pointer pr-1 uppercase tracking-wider"
+                className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer pr-1 uppercase tracking-widest"
               >
                 {roles.map(role => (
                   <option key={role} value={role} className="bg-[#111]">

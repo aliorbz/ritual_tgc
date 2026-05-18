@@ -480,7 +480,7 @@ export default function CardDetails() {
                   {isOwner && (
                     <button 
                       onClick={() => setIsEditModalOpen(true)}
-                      className="px-6 py-3.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white font-bold text-sm flex items-center gap-2"
+                      className="px-6 py-3.5 rounded-2xl bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all text-white font-bold text-sm flex items-center gap-2 shadow-lg"
                     >
                       <Edit3 size={16} /> Edit Card Design
                     </button>
@@ -568,7 +568,7 @@ export default function CardDetails() {
                           </button>
                           <button
                             onClick={handleSyncStats}
-                            className="py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                            className="py-4 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg"
                           >
                             <RefreshCw size={18} /> Sync Discord Stats
                           </button>
@@ -584,7 +584,7 @@ export default function CardDetails() {
                           </button>
                           <button
                             onClick={handleSyncStats}
-                            className="py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                            className="py-4 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg"
                           >
                             <RefreshCw size={18} /> Sync Discord Stats
                           </button>
@@ -617,7 +617,7 @@ export default function CardDetails() {
                           ) : (
                             <button 
                               onClick={() => setIsOfferModalOpen(true)}
-                              className="py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                              className="py-4 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg"
                             >
                               <Hand size={18} /> Make Offer
                             </button>
@@ -636,7 +636,7 @@ export default function CardDetails() {
                           ) : (
                             <button 
                               onClick={() => setIsOfferModalOpen(true)}
-                              className="w-full py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                              className="w-full py-4 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] hover:border-white/20 text-white rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg"
                             >
                               <Hand size={18} /> Make Offer
                             </button>
