@@ -122,17 +122,21 @@
 }
 
 .animate-marquee-left {
-  display: flex !important;
+  display: inline-flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
+  flex-shrink: 0 !important;
+  min-width: max-content !important;
   width: max-content;
   animation: marquee-left 35s linear infinite;
 }
 
 .animate-marquee-right {
-  display: flex !important;
+  display: inline-flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
+  flex-shrink: 0 !important;
+  min-width: max-content !important;
   width: max-content;
   animation: marquee-right 35s linear infinite;
 }
