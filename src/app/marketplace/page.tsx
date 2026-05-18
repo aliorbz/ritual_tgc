@@ -116,13 +116,13 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
             stats={card.cardMeta?.traits || { messages: "0", level: "1", activity: "New" }}
           >
             {/* Custom interactive action buttons directly on card face! */}
-            <div className="space-y-1.5 w-full">
+            <div className="space-y-1 sm:space-y-1.5 w-full">
               {/* Listed Price Badge directly inside card face */}
               {card.isListed && card.price && (
-                <div className="text-left pl-1.5 mb-1">
+                <div className="text-left pl-1 sm:pl-1.5 mb-0.5 sm:mb-1">
                   <span 
-                    className="text-3xl font-black uppercase tracking-tight text-white font-sans"
-                    style={{ textShadow: "0 2px 6px rgba(0,0,0,1), 0 4px 18px rgba(0,0,0,1)" }}
+                    className="text-[13px] xs:text-base sm:text-3xl font-black uppercase tracking-tight text-white font-sans"
+                    style={{ textShadow: "0 2px 4px rgba(0,0,0,1), 0 4px 12px rgba(0,0,0,1)" }}
                   >
                     {formatEther(card.price)} RITUAL
                   </span>
@@ -137,9 +137,9 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                       e.stopPropagation();
                       onCancelListing(card);
                     }}
-                    className="w-full py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
+                    className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5"
                   >
-                    <Trash2 size={12} /> Cancel List
+                    <Trash2 size={12} className="hidden sm:inline" /> Cancel List
                   </button>
                 ) : (
                   <button
@@ -148,26 +148,26 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                       e.stopPropagation();
                       onList(card);
                     }}
-                    className="w-full py-2.5 rounded-xl border text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:brightness-110"
+                    className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:brightness-110"
                     style={{ 
                       borderColor: colors.primary, 
                       backgroundColor: `${colors.primary}1A`, 
                       color: colors.primary 
                     }}
                   >
-                    <Tag size={12} /> List Card
+                    <Tag size={12} className="hidden sm:inline" /> List Card
                   </button>
                 )
               ) : (
                 card.isListed ? (
-                  <div className="flex gap-2 w-full">
+                  <div className="flex gap-1.5 sm:gap-2 w-full">
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         onOffer(card);
                       }}
-                      className="flex-1 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.04] backdrop-blur-md text-white/80 hover:text-white hover:bg-white/[0.08] transition-all text-[10px] font-black uppercase tracking-wider shadow-lg"
+                      className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.04] backdrop-blur-md text-white/80 hover:text-white hover:bg-white/[0.08] transition-all text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-lg"
                     >
                       Offer
                     </button>
@@ -177,7 +177,7 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                         e.stopPropagation();
                         onBuy(card);
                       }}
-                      className="flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wider text-black transition-all hover:brightness-110"
+                      className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-black text-[8px] xs:text-[9px] sm:text-[10px] uppercase tracking-wider text-black transition-all hover:brightness-110"
                       style={{ 
                         backgroundColor: colors.primary,
                         boxShadow: `0 4px 12px ${colors.glow}`
@@ -193,14 +193,14 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                       e.stopPropagation();
                       onOffer(card);
                     }}
-                    className="w-full py-2.5 rounded-xl border text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:brightness-110"
+                    className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:brightness-110"
                     style={{ 
                       borderColor: colors.primary, 
                       backgroundColor: `${colors.primary}1A`, 
                       color: colors.primary 
                     }}
                   >
-                    <Hand size={12} /> Make Offer
+                    <Hand size={12} className="hidden sm:inline" /> Make Offer
                   </button>
                 )
               )}
@@ -801,11 +801,11 @@ export default function MarketplacePage() {
               </div>
 
               {filteredCards.length > 0 ? (
-                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8 justify-items-start">
                   {filteredCards.map((card) => (
                     <div 
                       key={`${card.isListed ? "listed" : "unlisted"}-${card.tokenId.toString()}`}
-                      className={filteredCards.length === 1 ? "col-start-2 lg:col-start-1" : ""}
+                      className="w-full flex justify-start sm:justify-center"
                     >
                       <MarketCardItem
                         card={card}

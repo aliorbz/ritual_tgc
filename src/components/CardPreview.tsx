@@ -38,7 +38,7 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
       <div 
         ref={cardRef}
         id="card-capture-area"
-        className="relative w-[280px] h-[390px] rounded-[32px] overflow-hidden bg-[#050505] border-2 shadow-2xl flex flex-col justify-between p-4 transition-transform duration-500 hover:scale-[1.02] border-white/10"
+        className="relative w-full max-w-[165px] xs:max-w-[195px] sm:max-w-[280px] h-[230px] xs:h-[270px] sm:h-[390px] rounded-2xl sm:rounded-[32px] overflow-hidden bg-[#050505] border-2 shadow-2xl flex flex-col justify-between p-2.5 sm:p-4 transition-transform duration-500 hover:scale-[1.02] border-white/10"
         style={{ 
           boxShadow: `0 20px 40px -15px ${colors.glow}`,
           borderColor: isRadiant ? "#FFD700" : colors.primary
@@ -66,10 +66,10 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
         <div className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-[linear-gradient(105deg,transparent_30%,rgba(255,255,255,0.08)_40%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.08)_60%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer_2.5s_infinite_linear]" />
 
         {/* ── CARD HEADER (Name and NFT ID Badge on face) ── */}
-        <div className="relative z-20 w-full flex items-center justify-between gap-2 bg-black/60 backdrop-blur-md py-2.5 px-3.5 rounded-2xl border border-white/10 shadow-lg">
+        <div className="relative z-20 w-full flex items-center justify-between gap-1 sm:gap-2 bg-black/60 backdrop-blur-md py-1.5 px-2 sm:py-2.5 sm:px-3.5 rounded-xl sm:rounded-2xl border border-white/10 shadow-lg">
           <div className="text-left min-w-0 flex-1">
             <h3 
-              className="text-sm font-black font-outfit uppercase tracking-wider truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+              className="text-[10px] xs:text-xs sm:text-sm font-black font-outfit uppercase tracking-wider truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
               style={{ color: colors.primary }}
             >
               {username || "Ritualist"}
@@ -77,7 +77,7 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
           </div>
 
           <div 
-            className="px-2.5 py-0.5 rounded-lg border text-xs font-mono font-black flex-shrink-0 flex items-center justify-center bg-black/80 text-white/95"
+            className="px-1.5 py-0.5 rounded sm:rounded-lg border text-[9px] sm:text-xs font-mono font-black flex-shrink-0 flex items-center justify-center bg-black/80 text-white/95"
             style={{ borderColor: colors.primary, boxShadow: `0 0 10px ${colors.glow}60` }}
           >
             #{tokenId ? tokenId : "0"}

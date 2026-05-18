@@ -309,13 +309,13 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
               tokenId={token.tokenId}
               stats={metadata?.traits || { messages: "0", level: "1", activity: "New" }}
             >
-              <div className="space-y-1.5 w-full">
+              <div className="space-y-1 sm:space-y-1.5 w-full">
                 {/* Active price badge on card face */}
                 {isListed && listing && listing.active && (
-                  <div className="text-left pl-1.5 mb-1">
+                  <div className="text-left pl-1 sm:pl-1.5 mb-0.5 sm:mb-1">
                     <span 
-                      className="text-3xl font-black uppercase tracking-tight text-white font-sans"
-                      style={{ textShadow: "0 2px 6px rgba(0,0,0,1), 0 4px 18px rgba(0,0,0,1)" }}
+                      className="text-[13px] xs:text-base sm:text-3xl font-black uppercase tracking-tight text-white font-sans"
+                      style={{ textShadow: "0 2px 4px rgba(0,0,0,1), 0 4px 12px rgba(0,0,0,1)" }}
                     >
                       {formatEther(listing.price)} RITUAL
                     </span>
@@ -329,7 +329,7 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
                       e.stopPropagation();
                       setShowOffersModal(true);
                     }}
-                    className="w-full text-[9px] font-black text-center py-1.5 rounded-xl border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-all uppercase tracking-wider"
+                    className="w-full text-[7px] xs:text-[9px] sm:text-[9px] font-black text-center py-1 sm:py-1.5 rounded-lg sm:rounded-xl border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-all uppercase tracking-wider"
                   >
                     📨 {offerers.length} Offer{offerers.length > 1 ? "s" : ""}
                   </button>
@@ -343,9 +343,9 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
                       handleCancelListing();
                     }}
                     disabled={isCancelPending || isCancelConfirming}
-                    className="w-full py-2 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[10px] font-black uppercase tracking-wider disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    className="w-full py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-wider disabled:opacity-50 flex items-center justify-center gap-1 sm:gap-1.5"
                   >
-                    {isCancelPending ? "Waiting..." : isCancelConfirming ? "Removing..." : isCancelConfirmed ? "✅ Removed" : "Remove Listing"}
+                    {isCancelPending ? "Wait..." : isCancelConfirming ? "Remov..." : isCancelConfirmed ? "✅ Removed" : "Remove Listing"}
                   </button>
                 ) : (
                   <button
@@ -354,7 +354,7 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
                       e.stopPropagation();
                       setShowListModal(true);
                     }}
-                    className="w-full py-2.5 rounded-xl font-black text-xs text-black transition-all hover:brightness-110 flex items-center justify-center gap-1"
+                    className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-black text-[8px] xs:text-[10px] sm:text-xs text-black transition-all hover:brightness-110 flex items-center justify-center gap-1"
                     style={{ backgroundColor: colors.primary }}
                   >
                     List Card
