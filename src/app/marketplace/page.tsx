@@ -119,8 +119,11 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
             <div className="space-y-1.5 w-full">
               {/* Listed Price Badge directly inside card face */}
               {card.isListed && card.price && (
-                <div className="text-center bg-black/70 py-1 rounded-lg border border-white/5">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">
+                <div className="text-right pr-1.5 mb-1">
+                  <span 
+                    className="text-base font-black uppercase tracking-wide text-white font-sans"
+                    style={{ textShadow: "0 2px 4px rgba(0,0,0,0.95), 0 4px 12px rgba(0,0,0,0.95)" }}
+                  >
                     {formatEther(card.price)} RITUAL
                   </span>
                 </div>
