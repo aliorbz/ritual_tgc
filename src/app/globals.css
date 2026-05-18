@@ -122,13 +122,17 @@
 }
 
 .animate-marquee-left {
-  display: flex;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
   width: max-content;
   animation: marquee-left 35s linear infinite;
 }
 
 .animate-marquee-right {
-  display: flex;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
   width: max-content;
   animation: marquee-right 35s linear infinite;
 }

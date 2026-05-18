@@ -33,7 +33,7 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative w-full pt-36 md:pt-28 pb-24 lg:pt-36 lg:pb-32 flex items-center justify-center z-10">
+      <section className="relative w-full pt-44 md:pt-40 lg:pt-36 pb-24 lg:pb-32 flex items-center justify-center z-10">
         {/* Background Glowing Blobs */}
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
         <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
@@ -135,7 +135,7 @@ export default function Home() {
           
           {/* Row 1: Left to Right */}
           <div className="relative flex overflow-x-hidden w-full mask-gradient">
-            <div className="animate-marquee-right flex gap-6 px-3">
+            <div className="animate-marquee-right flex flex-row flex-nowrap gap-6 px-3">
               {[
                 "03e4e0d39ad4be7c979df0203e1353e7.webp",
                 "0a92e23a280629e2b44ca48a931515da.webp",
@@ -156,7 +156,7 @@ export default function Home() {
                 />
               ))}
             </div>
-            <div className="animate-marquee-right flex gap-6 px-3" aria-hidden="true">
+            <div className="animate-marquee-right flex flex-row flex-nowrap gap-6 px-3" aria-hidden="true">
               {[
                 "03e4e0d39ad4be7c979df0203e1353e7.webp",
                 "0a92e23a280629e2b44ca48a931515da.webp",
@@ -181,7 +181,7 @@ export default function Home() {
 
           {/* Row 2: Right to Left */}
           <div className="relative flex overflow-x-hidden w-full mask-gradient">
-            <div className="animate-marquee-left flex gap-6 px-3">
+            <div className="animate-marquee-left flex flex-row flex-nowrap gap-6 px-3">
               {[
                 "6262d48ae6e296a5a6e210f03185d2e2.webp",
                 "6559259dd85e77f0b66464113b91eae0.webp",
@@ -202,7 +202,7 @@ export default function Home() {
                 />
               ))}
             </div>
-            <div className="animate-marquee-left flex gap-6 px-3" aria-hidden="true">
+            <div className="animate-marquee-left flex flex-row flex-nowrap gap-6 px-3" aria-hidden="true">
               {[
                 "6262d48ae6e296a5a6e210f03185d2e2.webp",
                 "6559259dd85e77f0b66464113b91eae0.webp",
@@ -227,7 +227,7 @@ export default function Home() {
 
           {/* Row 3: Left to Right */}
           <div className="relative flex overflow-x-hidden w-full mask-gradient">
-            <div className="animate-marquee-right flex gap-6 px-3">
+            <div className="animate-marquee-right flex flex-row flex-nowrap gap-6 px-3">
               {[
                 "994c8ad7a94929c366ebf05cf7442692.webp",
                 "a_b4d8119d7f3d52cb9ec256a613674880.gif",
@@ -248,7 +248,7 @@ export default function Home() {
                 />
               ))}
             </div>
-            <div className="animate-marquee-right flex gap-6 px-3" aria-hidden="true">
+            <div className="animate-marquee-right flex flex-row flex-nowrap gap-6 px-3" aria-hidden="true">
               {[
                 "994c8ad7a94929c366ebf05cf7442692.webp",
                 "a_b4d8119d7f3d52cb9ec256a613674880.gif",
