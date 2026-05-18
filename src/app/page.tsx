@@ -46,6 +46,7 @@ type Listing = {
   tokenId: bigint;
   cardMeta?: CardMeta;
   price: bigint;
+  isListed?: boolean;
 };
 
 export default function Home() {
@@ -70,23 +71,39 @@ export default function Home() {
 
       const list: Listing[] = [];
 
-      // Step 2: Scan each NFT token and check if it's actively listed
-      for (let i = 1; i <= total && list.length < 4; i++) {
+      // Step 2: Scan tokens backwards (most recent first) up to 4 cards
+      for (let i = total; i >= 1 && list.length < 4; i--) {
         try {
           const tokenId = BigInt(i);
 
-          // Check activeListings per card
-          const listing = await client.readContract({
+          // Query marketplace contract for active listing ID of this token
+          const listingId = await client.readContract({
             address: CONTRACTS.MARKETPLACE.address,
             abi: CONTRACTS.MARKETPLACE.abi,
             functionName: "activeListings",
             args: [CONTRACTS.NFT.address, tokenId],
-          }) as any;
+          }) as bigint;
 
-          const isActive = Array.isArray(listing) ? listing[5] : listing?.active;
-          const price = Array.isArray(listing) ? listing[4] : listing?.price;
+          let price = BigInt(0);
+          let isListed = false;
 
-          if (!isActive || !price || price === BigInt(0)) continue;
+          if (listingId > BigInt(0)) {
+            const rawListing = await client.readContract({
+              address: CONTRACTS.MARKETPLACE.address,
+              abi: CONTRACTS.MARKETPLACE.abi,
+              functionName: "listings",
+              args: [listingId],
+            }) as any;
+
+            const isArray = Array.isArray(rawListing);
+            const active = isArray ? rawListing[5] : rawListing.active;
+            const rawPrice = isArray ? rawListing[4] : rawListing.price;
+
+            if (active) {
+              price = rawPrice;
+              isListed = true;
+            }
+          }
 
           // Fetch metadata
           let cardMeta: CardMeta | undefined;
@@ -118,7 +135,7 @@ export default function Home() {
             } catch (_) {}
           }
 
-          list.push({ tokenId, price, cardMeta });
+          list.push({ tokenId, price, cardMeta, isListed });
         } catch (_) {
           continue;
         }
@@ -168,10 +185,6 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center"
           >
-            <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-widest mb-6 inline-block uppercase font-sans">
-              <Sparkles size={10} className="inline mr-1.5 align-middle" /> Web3 Discord Trading Card Collection
-            </span>
-            
             <h1 className="text-5xl md:text-8xl font-black mb-8 leading-[0.95] tracking-tighter uppercase">
               Collect Your <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-purple-400 to-purple-500 drop-shadow-[0_2px_20px_rgba(16,185,129,0.3)]">
@@ -183,18 +196,12 @@ export default function Home() {
               The first Discord-native TCG collection on Ritual Testnet
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-5 w-full justify-center">
+            <div className="flex items-center justify-center w-full">
               <Link 
                 href="/marketplace"
                 className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-white text-black font-black text-lg flex items-center justify-center gap-3 transition-all hover:brightness-95 shadow-xl hover:shadow-white/5"
               >
                 Enter Marketplace <ArrowRight size={20} />
-              </Link>
-              <Link 
-                href="/profile"
-                className="w-full sm:w-auto px-8 py-4.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-black text-lg flex items-center justify-center gap-3 transition-all"
-              >
-                Connect &amp; Mint Card
               </Link>
             </div>
           </motion.div>
@@ -217,8 +224,8 @@ export default function Home() {
             },
             {
               icon: <Flame className="text-yellow-400" size={26} />,
-              title: "Upgradable Power Tiers",
-              description: "Minted a card as a Bitty? Unlock next-tier minting capabilities automatically as you climb roles to Ritty, Ritualist, or Mod!"
+              title: "One Click Sync",
+              description: "Minted a card as a Bitty? Unlock next-tier capabilities just by one click syncing as you climb roles to Ritty, Ritualist, or Radiant!"
             }
           ].map((feat, i) => (
             <motion.div 
@@ -299,16 +306,20 @@ export default function Home() {
                       />
                     </div>
                   </Link>
-                  <div className="w-full mt-4 p-2 flex items-center justify-between border-t border-white/5 pt-4">
+                  <div className="w-full mt-4 p-2 flex items-center justify-between border-t border-white/5 pt-4 font-sans">
                     <div>
-                      <p className="text-[9px] text-white/30 uppercase font-black font-sans">Listed For</p>
-                      <p className="text-sm font-black mt-0.5">{formatEther(item.price)} RITUAL</p>
+                      <p className="text-[9px] text-white/30 uppercase font-black tracking-wider">
+                        {item.isListed ? "Listed For" : "Status"}
+                      </p>
+                      <p className="text-sm font-black mt-0.5 text-white">
+                        {item.isListed ? `${formatEther(item.price)} RITUAL` : "Unlisted"}
+                      </p>
                     </div>
-                  <Link 
+                    <Link 
                       href={`/card/${item.tokenId}`}
-                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-all font-black text-xs uppercase tracking-wider text-center font-sans shadow-md shadow-emerald-500/10"
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-all font-black text-xs uppercase tracking-wider text-center shadow-md shadow-emerald-500/10 text-white font-sans"
                     >
-                      View Details
+                      {item.isListed ? "Buy" : "Offer"}
                     </Link>
                   </div>
                 </motion.div>
@@ -318,16 +329,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="w-full py-10 bg-black/80 border-t border-white/5 mt-auto relative z-10">
-        <div className="container mx-auto px-6 max-w-6xl flex flex-col md:flex-row items-center justify-between gap-6 text-white/30 text-xs font-sans font-bold uppercase tracking-widest">
-          <p>© 2026 Ritual TCG ecosystem</p>
-          <div className="flex items-center gap-6">
-            <Link href="/marketplace" className="hover:text-white transition-colors">Marketplace</Link>
-            <Link href="/profile" className="hover:text-white transition-colors">Profile Hub</Link>
-          </div>
-        </div>
-      </footer>
+
     </div>
   );
 }

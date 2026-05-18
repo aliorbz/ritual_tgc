@@ -26,7 +26,7 @@ export function Navbar() {
     : "0.0000";
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-black/60 backdrop-blur-2xl border-b border-white/5">
+    <nav className="fixed top-0 left-0 w-full z-50 bg-transparent border-b border-white/5">
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
           <motion.div 

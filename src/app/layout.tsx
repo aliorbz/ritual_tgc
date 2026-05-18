@@ -41,7 +41,7 @@ export default function RootLayout({
                     <img src="/ritual.jpg" alt="Ritual Logo" className="w-8 h-8 rounded-lg object-cover" />
                     <span className="font-outfit font-bold text-xl">Ritual TCG</span>
                   </div>
-                  <p className="text-white/40 text-sm">© 2026 Ritual TCG Cards. Built for Ritual Testnet.</p>
+                  <p className="text-white/40 text-sm">© 2026 Ritual TCG Cards. Built by aliorbz</p>
                 </div>
               </footer>
             </div>
