@@ -24,7 +24,10 @@ export async function getDiscordUserRoles() {
     const ritualGuild = guilds.find((g: any) => g.id === DISCORD_CONFIG.serverId);
     
     if (!ritualGuild) {
-      return { error: "You are not a member of the Ritual Discord server." };
+      return { 
+        ineligible: true, 
+        error: "You are not a member of the Ritual Discord server. Please join the server to mint your card." 
+      };
     }
 
     // 2. Get member roles for this guild
@@ -39,9 +42,10 @@ export async function getDiscordUserRoles() {
     );
 
     if (!memberResponse.ok) {
-      // Fallback if members.read scope is missing or fails
-      // We can check the guild's roles directly if we have a bot, but here we rely on the user token
-      return { error: "Could not verify your Ritual Discord role. Please make sure you authorized members access." };
+      return { 
+        ineligible: true, 
+        error: "Could not verify your Ritual Discord role. Please make sure you authorized members access." 
+      };
     }
 
     const memberData = await memberResponse.json();
@@ -60,7 +64,10 @@ export async function getDiscordUserRoles() {
     const highestRole = rolePriority.find(rp => roles.includes(rp.id));
 
     if (!highestRole) {
-      return { error: "You do not have any eligible roles in the Ritual Discord server." };
+      return { 
+        ineligible: true, 
+        error: "You do not meet the requirements to mint. You must hold one of the following roles in the Ritual Discord: Bitty, Ritty, Ritualist, Radiant Ritualist, or Mod." 
+      };
     }
 
     const mockStats: Record<string, any> = {

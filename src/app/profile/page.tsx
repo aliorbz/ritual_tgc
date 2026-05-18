@@ -391,6 +391,34 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </div>
+              ) : userData?.ineligible ? (
+                <div className="p-12 rounded-[40px] bg-red-500/5 border border-red-500/10 text-center relative overflow-hidden w-full max-w-lg shadow-2xl">
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-red-500/20">
+                      <ShieldCheck className="text-red-400" size={36} />
+                    </div>
+                    <h2 className="text-2xl font-black mb-4 uppercase tracking-tighter text-red-400">Ineligible to Mint</h2>
+                    <p className="text-white/60 mb-6 leading-relaxed font-sans text-sm max-w-sm">
+                      Your Discord account does not meet the requirements to mint a profile TCG card.
+                    </p>
+                    <p className="text-white/45 mb-8 leading-relaxed font-sans text-xs max-w-sm bg-white/[0.02] border border-white/5 p-5 rounded-2xl">
+                      {userData.error || "To qualify, you must hold one of the active roles in the Ritual Discord server: Bitty, Ritty, Ritualist, Radiant Ritualist, or Mod."}
+                    </p>
+                    {activeSession?.user?.name && (
+                      <p className="text-xs text-white/40 mb-8 font-sans">
+                        Connected Discord: <span className="text-white/60 font-bold">@{activeSession.user.name}</span>
+                      </p>
+                    )}
+                    <a
+                      href="https://discord.gg/ritual"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-8 py-4 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-2xl font-black transition-all flex items-center justify-center gap-3 w-full shadow-lg shadow-blue-500/10 text-sm uppercase tracking-wider"
+                    >
+                      Join Discord Server
+                    </a>
+                  </div>
+                </div>
               ) : (
                 <div className="flex flex-col lg:flex-row gap-16 items-center lg:items-start w-full max-w-5xl mt-10">
                   {/* Left: Card Preview */}
