@@ -314,7 +314,7 @@ function OwnedCardItem({ token, address, onRefresh }: { token: any; address: str
                 {isListed && listing && listing.active && (
                   <div className="text-left pl-1 sm:pl-1.5 mb-0.5 sm:mb-1">
                     <span 
-                      className="text-[13px] xs:text-base sm:text-3xl font-black uppercase tracking-tight text-white font-sans"
+                      className="text-[14px] xs:text-base sm:text-3xl font-black uppercase tracking-tight text-white font-sans"
                       style={{ textShadow: "0 2px 4px rgba(0,0,0,1), 0 4px 12px rgba(0,0,0,1)" }}
                     >
                       {formatEther(listing.price)} RITUAL

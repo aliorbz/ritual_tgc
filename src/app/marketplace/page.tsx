@@ -121,7 +121,7 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
               {card.isListed && card.price && (
                 <div className="text-left pl-1 sm:pl-1.5 mb-0.5 sm:mb-1">
                   <span 
-                    className="text-[13px] xs:text-base sm:text-3xl font-black uppercase tracking-tight text-white font-sans"
+                    className="text-[14px] xs:text-base sm:text-3xl font-black uppercase tracking-tight text-white font-sans"
                     style={{ textShadow: "0 2px 4px rgba(0,0,0,1), 0 4px 12px rgba(0,0,0,1)" }}
                   >
                     {formatEther(card.price)} RITUAL
@@ -726,7 +726,7 @@ export default function MarketplacePage() {
   return (
     <main className="min-h-screen bg-[#121212] text-white font-['Outfit',sans-serif]">
       <Navbar />
-      <div className="max-w-7xl mx-auto px-6 pt-28 pb-20">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-28 pb-20">
         {/* Header */}
         <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
