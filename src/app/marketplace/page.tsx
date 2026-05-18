@@ -453,7 +453,7 @@ export default function MarketplacePage() {
   const [filter, setFilter] = useState("All");
   const [sort, setSort] = useState("recent");
 
-  const roles = ["All", "Mod", "Radiant", "Ritualist", "Ritty", "Bitty"];
+  const roles = ["All", "Mod", "Radiant", "Ritualist", "Ritty", "Bitty", "Seeker"];
 
   // Delisting write hook
   const { data: cancelHash, writeContract: cancelListingContract, isPending: isCancelPending } = useWriteContract();
