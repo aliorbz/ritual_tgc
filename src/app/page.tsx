@@ -33,7 +33,7 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative w-full pt-28 pb-24 lg:pt-36 lg:pb-32 flex items-center justify-center z-10">
+      <section className="relative w-full pt-36 md:pt-28 pb-24 lg:pt-36 lg:pb-32 flex items-center justify-center z-10">
         {/* Background Glowing Blobs */}
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
         <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-600/10 blur-[150px] rounded-full pointer-events-none z-0" />

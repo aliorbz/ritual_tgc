@@ -730,7 +730,7 @@ export default function MarketplacePage() {
         {/* Header */}
         <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter text-white">Marketplace</h1>
+            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black uppercase tracking-tighter text-white">Marketplace</h1>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-[11px] font-bold text-white/30 uppercase tracking-widest font-sans">
               <span>5% Royalty fee</span>
               <span>·</span>
@@ -801,17 +801,21 @@ export default function MarketplacePage() {
               </div>
 
               {filteredCards.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-8">
                   {filteredCards.map((card) => (
-                    <MarketCardItem
+                    <div 
                       key={`${card.isListed ? "listed" : "unlisted"}-${card.tokenId.toString()}`}
-                      card={card}
-                      onBuy={setSelectedBuy}
-                      onOffer={setSelectedOffer}
-                      onList={setSelectedList}
-                      onCancelListing={handleCancelListing}
-                      currentAddress={address}
-                    />
+                      className={filteredCards.length === 1 ? "col-start-2 lg:col-start-1" : ""}
+                    >
+                      <MarketCardItem
+                        card={card}
+                        onBuy={setSelectedBuy}
+                        onOffer={setSelectedOffer}
+                        onList={setSelectedList}
+                        onCancelListing={handleCancelListing}
+                        currentAddress={address}
+                      />
+                    </div>
                   ))}
                 </div>
               ) : (

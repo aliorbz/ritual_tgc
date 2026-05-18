@@ -534,14 +534,6 @@ export default function CardDetails() {
                         <div className="text-3xl font-black text-white/40">Not Listed</div>
                       )}
                     </div>
-                    {isListed && (
-                      <div className="text-right font-sans">
-                        <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-2 flex items-center justify-end gap-1.5">
-                          <Clock size={12} className="text-emerald-400" /> Sale End Date
-                        </p>
-                        <p className="text-base font-bold text-white/80">Continuous Ask</p>
-                      </div>
-                    )}
                   </div>
 
                   {/* Actions Grid */}
