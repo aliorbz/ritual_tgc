@@ -180,12 +180,12 @@ export default function ProfilePage() {
       setIsRoleLoading(true);
       // Real Discord Syncing
       const data = await getDiscordUserRoles();
-      if (!data.error) {
+      if (data && !data.error) {
         setUserData(data);
       } else {
         setUserData({
-          role: { type: "ritualist", name: "Ritualist" },
-          stats: { messages: "150", level: "3", activity: "Medium" }
+          ineligible: true,
+          error: data?.error || "We could not verify your guild membership status. Please log in again."
         });
       }
       setIsRoleLoading(false);
