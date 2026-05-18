@@ -143,7 +143,7 @@ export default function Home() {
       {/* Infinite Video Background */}
       <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <video
-          className="w-full h-full object-cover opacity-15 filter blur-[8px]"
+          className="w-full h-full object-cover opacity-40 filter blur-[6px]"
           autoPlay
           loop
           muted
@@ -152,7 +152,7 @@ export default function Home() {
           <source src="/media/ritualvid.mp4" type="video/mp4" />
         </video>
         {/* Dark overlay with gradients to integrate the video smoothly */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#060606]/30 via-[#060606]/70 to-[#060606]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#060606]/50 to-[#060606]/95" />
       </div>
 
       {/* Hero Section */}
