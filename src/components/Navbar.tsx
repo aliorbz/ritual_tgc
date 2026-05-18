@@ -26,8 +26,16 @@ export function Navbar() {
     : "0.0000";
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-[#060606]/35 backdrop-blur-md">
-      <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+    <nav className="fixed top-0 left-0 w-full z-50">
+      {/* Dynamic Fading Glass-Blur Background */}
+      <div 
+        className="absolute inset-0 z-0 bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-[6px]"
+        style={{
+          maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0) 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0) 100%)"
+        }}
+      />
+      <div className="container mx-auto px-6 h-20 flex items-center justify-between relative z-10">
         <Link href="/" className="flex items-center gap-3 group">
           <motion.div 
             whileHover={{ rotate: 10, scale: 1.05 }}
