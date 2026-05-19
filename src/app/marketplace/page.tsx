@@ -452,6 +452,20 @@ export default function MarketplacePage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [sort, setSort] = useState("recent");
+  const [placeholderText, setPlaceholderText] = useState("Search...");
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setPlaceholderText("Search...");
+      } else {
+        setPlaceholderText("Search by name, ID, or role...");
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const roles = ["All", "Mod", "Radiant", "Ritualist", "Ritty", "Bitty", "Seeker"];
 
@@ -747,25 +761,25 @@ export default function MarketplacePage() {
             background: "linear-gradient(135deg, rgba(57, 255, 20, 0.25) 0%, rgba(192, 132, 252, 0.25) 100%)"
           }}
         >
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
-            <div className="relative w-full flex-grow group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors" size={18} />
+          <div className="flex items-center justify-between gap-2.5 w-full">
+            <div className="relative flex-grow group">
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors" size={16} />
               <input 
                 type="text" 
-                placeholder="Search by name, ID, or role..."
+                placeholder={placeholderText}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-black/40 border border-white/5 rounded-xl py-2.5 pl-11 pr-4 text-sm font-medium focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-sans"
+                className="w-full bg-black/40 border border-white/5 rounded-xl py-2 sm:py-2.5 pl-9 sm:pl-11 pr-3 sm:pr-4 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-sans"
               />
             </div>
             
             {/* Role Filter Dropdown */}
-            <div className="relative flex items-center bg-black/40 border border-white/5 rounded-xl px-4 py-2.5 gap-2 font-sans w-full sm:w-auto flex-shrink-0">
-              <SlidersHorizontal size={14} className="text-white/40" />
+            <div className="relative flex items-center bg-black/40 border border-white/5 rounded-xl px-2.5 sm:px-4 py-2 sm:py-2.5 gap-1.5 sm:gap-2 font-sans flex-shrink-0">
+              <SlidersHorizontal size={12} className="text-white/40" />
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer pr-1 uppercase tracking-widest"
+                className="bg-transparent text-[10px] sm:text-xs font-bold text-white focus:outline-none cursor-pointer pr-1 uppercase tracking-widest"
               >
                 {roles.map(role => (
                   <option key={role} value={role} className="bg-[#111]">
