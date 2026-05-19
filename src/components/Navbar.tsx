@@ -3,17 +3,18 @@
 import React from "react";
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useDisconnect, useBalance } from "wagmi";
+import { useAccount, useDisconnect, useBalance, useSwitchChain } from "wagmi";
 import { formatEther } from "viem";
 import { useSession, signOut } from "next-auth/react";
-import { User, LogOut, ChevronDown } from "lucide-react";
+import { User, LogOut, ChevronDown, PlusCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RITUAL_NETWORK } from "@/lib/config";
 import { usePathname } from "next/navigation";
 
 export function Navbar() {
-  const { isConnected, address } = useAccount();
+  const { isConnected, address, chainId } = useAccount();
   const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
   const { data: session } = useSession();
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const pathname = usePathname();
@@ -210,6 +211,21 @@ export function Navbar() {
                         <span className="flex items-center gap-3"><User size={16} /> Profile Hub</span>
                         <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Mint</span>
                       </Link>
+
+                      <button 
+                        onClick={() => {
+                          if (switchChain) {
+                            switchChain({ chainId: RITUAL_NETWORK.id });
+                          }
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-black uppercase tracking-wider text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-all mt-1"
+                      >
+                        <span className="flex items-center gap-3"><PlusCircle size={16} /> Add Network</span>
+                        {chainId !== RITUAL_NETWORK.id && (
+                          <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 animate-pulse">Required</span>
+                        )}
+                      </button>
 
                       <button 
                         onClick={() => {
