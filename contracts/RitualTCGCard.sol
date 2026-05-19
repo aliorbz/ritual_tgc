@@ -9,7 +9,7 @@ contract RitualTCGCard is ERC721, ERC721Enumerable, Ownable {
     uint256 private _nextTokenId;
     string private _baseTokenURI;
 
-    uint256 public constant MINT_FEE = 0.01 ether; // 0.01 RITUAL
+    uint256 public constant MINT_FEE = 0.001 ether; // 0.001 RITUAL
 
     mapping(string => bool) public discordIdMinted;
     mapping(string => mapping(string => bool)) public discordIdRoleMinted;
