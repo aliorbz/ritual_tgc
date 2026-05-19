@@ -3,17 +3,46 @@
 import * as React from "react";
 import {
   RainbowKitProvider,
-  getDefaultConfig,
+  connectorsForWallets,
   darkTheme,
 } from "@rainbow-me/rainbowkit";
-import { WagmiProvider, http } from "wagmi";
+import {
+  injectedWallet,
+  rainbowWallet,
+  metaMaskWallet,
+  trustWallet,
+  coinbaseWallet,
+  walletConnectWallet,
+} from "@rainbow-me/rainbowkit/wallets";
+import { WagmiProvider, createConfig, http } from "wagmi";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { RITUAL_NETWORK } from "@/lib/config";
 import "@rainbow-me/rainbowkit/styles.css";
 
-const config = getDefaultConfig({
-  appName: "Ritual TCG Cards",
-  projectId: "YOUR_PROJECT_ID", // Placeholder
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "8622b7405e3f4438b9fa782b43b6ad59";
+
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: "Recommended",
+      wallets: [
+        injectedWallet,
+        metaMaskWallet,
+        rainbowWallet,
+        trustWallet,
+        coinbaseWallet,
+        walletConnectWallet,
+      ],
+    },
+  ],
+  {
+    appName: "Ritual TCG Cards",
+    projectId,
+  }
+);
+
+const config = createConfig({
+  connectors,
   chains: [RITUAL_NETWORK as any],
   transports: {
     [RITUAL_NETWORK.id]: http(),

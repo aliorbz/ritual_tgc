@@ -724,13 +724,20 @@ export default function MarketplacePage() {
         {/* Header */}
         <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black uppercase tracking-tighter text-white">Marketplace</h1>
+            <div className="flex items-center gap-4 sm:gap-6">
+              <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black uppercase tracking-tighter text-white">Marketplace</h1>
+              {!isLoading && (
+                <div 
+                  className="w-9 h-9 sm:w-14 sm:h-14 rounded-full border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center font-black text-sm sm:text-xl text-emerald-400 shadow-lg shadow-emerald-500/5 animate-pulse"
+                >
+                  {totalMinted}
+                </div>
+              )}
+            </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-[11px] font-bold text-white/30 uppercase tracking-widest font-sans">
               <span>5% Royalty fee</span>
               <span>·</span>
               <span>Secure Escrow Bids</span>
-              <span>·</span>
-              {!isLoading && <span>{totalMinted} dynamic card{totalMinted !== 1 ? "s" : ""} minted</span>}
             </div>
           </div>
         </div>
@@ -786,13 +793,6 @@ export default function MarketplacePage() {
           </div>
         ) : (
           <div className="space-y-16">
-            <div>
-              <div className="flex items-center gap-4 mb-8">
-                <h2 className="text-3xl font-black uppercase tracking-tight">TCG Card Arena</h2>
-                <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-white/40 font-sans">
-                  {filteredCards.length} card{filteredCards.length !== 1 ? "s" : ""}
-                </span>
-              </div>
 
               {filteredCards.length > 0 ? (
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8 justify-items-start">
@@ -817,7 +817,6 @@ export default function MarketplacePage() {
                   No cards match your current filters.
                 </div>
               )}
-            </div>
           </div>
         )}
       </div>

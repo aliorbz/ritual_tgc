@@ -536,13 +536,11 @@ export default function CardDetails() {
       <style>{`
         @keyframes badge-glow {
           0%, 100% {
-            box-shadow: 0 0 8px var(--glow-color), inset 0 0 4px var(--glow-color);
-            filter: drop-shadow(0 0 2px var(--glow-color));
-            opacity: 0.8;
+            filter: drop-shadow(0 0 3px var(--glow-color)) drop-shadow(0 0 8px var(--glow-color));
+            opacity: 0.85;
           }
           50% {
-            box-shadow: 0 0 24px var(--glow-color), inset 0 0 10px var(--glow-color);
-            filter: drop-shadow(0 0 12px var(--glow-color));
+            filter: drop-shadow(0 0 10px var(--glow-color)) drop-shadow(0 0 20px var(--glow-color));
             opacity: 1;
           }
         }
@@ -650,17 +648,12 @@ export default function CardDetails() {
                     {metadata?.discordRole && (
                       <div className="relative group/tooltip">
                         <div 
-                          className="w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 animate-badge-glow"
+                          className="w-10 h-10 flex items-center justify-center cursor-pointer transition-all duration-300 animate-badge-glow"
                           style={{
-                            borderColor: colors.isGradient ? "transparent" : colors.primary,
-                            background: colors.isGradient 
-                              ? `linear-gradient(#121212, #121212) padding-box, ${colors.gradient} border-box` 
-                              : `${colors.primary}10`,
-                            border: "2px solid transparent",
                             '--glow-color': colors.isGradient ? "#bae6fd" : colors.primary
                           } as any}
                         >
-                          <VerifiedRosette size={22} color={colors.isGradient ? "#bae6fd" : colors.primary} />
+                          <VerifiedRosette size={38} color={colors.isGradient ? "#bae6fd" : colors.primary} />
                         </div>
                         
                         {/* Tooltip Content */}
