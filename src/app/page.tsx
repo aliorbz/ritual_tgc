@@ -128,9 +128,6 @@ export default function Home() {
         <div className="container mx-auto px-6 max-w-6xl mb-16">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest mb-3 inline-block uppercase font-sans">
-                Dynamic Active Collectors
-              </span>
               <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">Featured Users</h2>
               <p className="text-white/40 text-sm mt-2 font-sans max-w-lg">
                 Dynamic server participants and collection collectors climbing the ranks in real-time.
