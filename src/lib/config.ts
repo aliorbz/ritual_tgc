@@ -131,13 +131,13 @@ export const CONTRACTS = {
   NFT: {
     address: (process.env.NODE_ENV === "development" 
       ? "0x5FbDB2315678afecb367f032d93F642f64180aa3" 
-      : "0x50Ee032d382B49A687EBDa08c5192fb7c5b9e392") as const,
+      : "0x3709CE39819fE72F6eF9d76E7196481219A995Db") as const,
     abi: NFT_ABI,
   },
   MARKETPLACE: {
     address: (process.env.NODE_ENV === "development" 
       ? "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512" 
-      : "0x9F45E79288f1766553E88C45CD5B254CD4662854") as const,
+      : "0x2a3C8A880398FF6DD8e6F9976c8BE6C8aBef2435") as const,
     abi: MARKETPLACE_ABI,
   },
 };

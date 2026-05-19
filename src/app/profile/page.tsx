@@ -185,7 +185,7 @@ export default function ProfilePage() {
           userData.role.name,
           activeSession.user?.name || "user",
         ],
-        value: parseEther("0.001"),
+        value: parseEther("0.01"),
       });
     } catch (e: any) {
       console.error("Minting failed", e);
@@ -520,7 +520,7 @@ export default function ProfilePage() {
 
                     {/* Mint Info */}
                     <div className="flex items-center gap-6 mt-6 lg:ml-2 text-[10px] font-bold text-white/30 uppercase tracking-widest font-sans">
-                      <div>Fee: <span className="text-white/70">0.001 RITUAL</span></div>
+                      <div>Fee: <span className="text-white/70">0.01 RITUAL</span></div>
                       <div>Contract: <span className="text-white/70">{CONTRACTS.NFT.address.slice(0,6)}...{CONTRACTS.NFT.address.slice(-4)}</span></div>
                     </div>
 
