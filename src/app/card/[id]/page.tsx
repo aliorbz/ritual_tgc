@@ -936,7 +936,7 @@ export default function CardDetails() {
                             <td className="px-6 py-4 font-bold text-white font-sans flex items-center gap-2">
                               <Check size={14} style={{ color: colors.primary }} /> MINTED
                             </td>
-                            <td className="px-6 py-4">0.01 RITUAL</td>
+                            <td className="px-6 py-4">0.001 RITUAL</td>
                             <td className="px-6 py-4 text-white/30">0x0000...0000</td>
                             <td className="px-6 py-4 text-emerald-400">{(owner || "").slice(0, 6)}...{(owner || "").slice(-4)}</td>
                           </tr>
