@@ -88,64 +88,71 @@ export function Navbar() {
               </span>
             </div>
           )}
-          <ConnectButton.Custom>
-            {({
-              account,
-              chain,
-              openAccountModal,
-              openConnectModal,
-              mounted,
-            }) => {
-              const ready = mounted;
-              const connected = ready && account && chain;
+          {/* Desktop/Tablet: Default RainbowKit Connect Button */}
+          <div className="hidden md:block">
+            <ConnectButton showBalance={false} chainStatus="none" accountStatus="address" />
+          </div>
 
-              return (
-                <div
-                  {...(!ready && {
-                    'aria-hidden': true,
-                    className: "opacity-0 pointer-events-none select-none",
-                  })}
-                >
-                  {(() => {
-                    if (!connected) {
-                      return (
-                        <button
-                          onClick={openConnectModal}
-                          type="button"
-                          className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-black uppercase tracking-wider bg-white text-black hover:bg-white/90 rounded-xl transition-all shadow-md active:scale-95 flex-shrink-0"
-                        >
-                          <span className="sm:hidden">Connect</span>
-                          <span className="hidden sm:inline">Connect Wallet</span>
-                        </button>
-                      );
-                    }
+          {/* Mobile only: Custom Compact Connect Button */}
+          <div className="md:hidden">
+            <ConnectButton.Custom>
+              {({
+                account,
+                chain,
+                openAccountModal,
+                openConnectModal,
+                mounted,
+              }) => {
+                const ready = mounted;
+                const connected = ready && account && chain;
 
-                    if (chain.unsupported) {
+                return (
+                  <div
+                    {...(!ready && {
+                      'aria-hidden': true,
+                      className: "opacity-0 pointer-events-none select-none",
+                    })}
+                  >
+                    {(() => {
+                      if (!connected) {
+                        return (
+                          <button
+                            onClick={openConnectModal}
+                            type="button"
+                            className="px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider bg-white text-black hover:bg-white/90 rounded-xl transition-all shadow-md active:scale-95 flex-shrink-0"
+                          >
+                            Connect
+                          </button>
+                        );
+                      }
+
+                      if (chain.unsupported) {
+                        return (
+                          <button
+                            onClick={openAccountModal}
+                            type="button"
+                            className="px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl transition-all flex-shrink-0"
+                          >
+                            Wrong Network
+                          </button>
+                        );
+                      }
+
                       return (
                         <button
                           onClick={openAccountModal}
                           type="button"
-                          className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-black uppercase tracking-wider bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl transition-all flex-shrink-0"
+                          className="px-2.5 py-1.5 text-[10px] font-black font-mono tracking-wider bg-white/5 border border-white/10 hover:bg-white/10 text-white/90 rounded-xl transition-all flex-shrink-0"
                         >
-                          Wrong Network
+                          {account.displayName}
                         </button>
                       );
-                    }
-
-                    return (
-                      <button
-                        onClick={openAccountModal}
-                        type="button"
-                        className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-black font-mono tracking-wider bg-white/5 border border-white/10 hover:bg-white/10 text-white/90 rounded-xl transition-all flex-shrink-0"
-                      >
-                        {account.displayName}
-                      </button>
-                    );
-                  })()}
-                </div>
-              );
-            }}
-          </ConnectButton.Custom>
+                    })()}
+                  </div>
+                );
+              }}
+            </ConnectButton.Custom>
+          </div>
           
           {isConnected && (
             <div className="relative">
