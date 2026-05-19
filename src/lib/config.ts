@@ -37,12 +37,14 @@ export const MARKETPLACE_CONFIG = {
 
 export const ROLE_COLORS = {
   mod: {
-    primary: "#FF1493",
-    secondary: "#FF69B4",
-    glow: "rgba(255, 20, 147, 0.5)",
-    text: "text-pink-400",
-    bg: "bg-pink-500/20",
-    border: "border-pink-500/30"
+    primary: "#bae6fd",
+    secondary: "#fbcfe8",
+    glow: "rgba(186, 230, 253, 0.4)",
+    text: "text-sky-200",
+    bg: "bg-sky-500/10",
+    border: "border-sky-500/20",
+    isGradient: true,
+    gradient: "linear-gradient(135deg, #bae6fd 0%, #fbcfe8 35%, #ffedd5 70%, #bae6fd 100%)"
   },
   radiant: {
     primary: "#FFD700",

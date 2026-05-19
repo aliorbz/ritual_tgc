@@ -548,6 +548,7 @@ export default function CardDetails() {
                   avatar={metadata?.image || ""}
                   stats={metadata?.traits || { messages: "0", level: "1", activity: "New" }}
                   walletAddress={owner}
+                  insideCardPage={true}
                 />
 
                 <div className="flex justify-center gap-4 mt-8">
@@ -567,10 +568,10 @@ export default function CardDetails() {
             <div className="lg:col-span-7 space-y-8">
               <div>
                 <div 
-                  className="flex items-center gap-1.5 mb-3 font-black text-[10px] tracking-widest uppercase font-sans"
-                  style={{ color: colors.primary }}
+                  className={`flex items-center gap-1.5 mb-3 font-black text-[10px] tracking-widest uppercase font-sans ${colors.isGradient ? 'bg-clip-text text-transparent bg-gradient-to-r' : ''}`}
+                  style={colors.isGradient ? { backgroundImage: colors.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color: colors.primary }}
                 >
-                  <ShieldCheck size={14} /> Verified Ritual Collection card
+                  <ShieldCheck size={14} style={{ color: colors.isGradient ? '#bae6fd' : undefined }} /> Ritual TCG Verified
                 </div>
                 <h1 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-5">
                   {metadata?.name || `Card #${id}`}
@@ -579,7 +580,7 @@ export default function CardDetails() {
                 <div className="flex flex-wrap items-center gap-6 text-xs font-bold font-sans">
                   <div className="flex items-center gap-2">
                     <span className="text-white/30 uppercase">Card Owner</span>
-                    <span className="font-mono bg-white/5 border border-white/5 px-2.5 py-1 rounded-lg" style={{ color: colors.primary }}>
+                    <span className={`font-mono bg-white/5 border border-white/5 px-2.5 py-1 rounded-lg ${colors.isGradient ? 'bg-clip-text text-transparent bg-gradient-to-r' : ''}`} style={colors.isGradient ? { backgroundImage: colors.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color: colors.primary }}>
                       {(owner || "").slice(0, 8)}...{(owner || "").slice(-6)}
                     </span>
                   </div>
@@ -602,12 +603,35 @@ export default function CardDetails() {
                       {isListed ? (
                         <div className="flex items-end gap-2.5">
                           <span className="text-4xl lg:text-5xl font-black leading-none">{formatEther(listingPrice)}</span>
-                          <span className="text-lg font-black" style={{ color: colors.primary }}>RITUAL</span>
+                          <span className={`text-lg font-black ${colors.isGradient ? 'bg-clip-text text-transparent bg-gradient-to-r' : ''}`} style={colors.isGradient ? { backgroundImage: colors.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color: colors.primary }}>RITUAL</span>
                         </div>
                       ) : (
                         <div className="text-3xl font-black text-white/40">Not Listed</div>
                       )}
                     </div>
+
+                    {/* Verified Badge */}
+                    {metadata?.discordRole && (
+                      <div 
+                        className="px-4 py-2 rounded-full border text-xs font-black uppercase tracking-wider select-none font-sans flex items-center gap-1.5"
+                        style={{
+                          borderColor: colors.isGradient ? "transparent" : colors.primary,
+                          background: colors.isGradient 
+                            ? `linear-gradient(#121212, #121212) padding-box, ${colors.gradient} border-box` 
+                            : `${colors.primary}10`,
+                          border: colors.isGradient ? "1.5px transparent solid" : undefined,
+                          boxShadow: `0 0 16px ${colors.glow}`
+                        }}
+                      >
+                        <ShieldCheck size={14} style={{ color: colors.isGradient ? "#bae6fd" : colors.primary }} />
+                        <span 
+                          className={colors.isGradient ? "bg-clip-text text-transparent bg-gradient-to-r" : ""}
+                          style={colors.isGradient ? { backgroundImage: colors.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } : { color: colors.primary, textShadow: `0 0 8px ${colors.glow}` }}
+                        >
+                          {metadata.discordRole}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions Grid */}
@@ -656,7 +680,7 @@ export default function CardDetails() {
                           <button
                             onClick={() => setIsListModalOpen(true)}
                             className="py-4 text-black rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-xl hover:brightness-95"
-                            style={{ backgroundColor: colors.primary }}
+                            style={colors.isGradient ? { backgroundImage: colors.gradient } : { backgroundColor: colors.primary }}
                           >
                             <Tag size={18} /> List Card for Sale
                           </button>
