@@ -37,7 +37,7 @@ export function Navbar() {
           WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0) 100%)"
         }}
       />
-      <div className="container mx-auto px-8 sm:px-6 h-20 flex items-center justify-between relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 h-20 flex items-center justify-between relative z-10">
         <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
           <motion.div 
             whileHover={{ rotate: 10, scale: 1.05 }}
