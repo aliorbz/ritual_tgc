@@ -6,6 +6,7 @@ import path from "path";
 import { createPublicClient, http } from "viem";
 import { RITUAL_NETWORK, CONTRACTS } from "@/lib/config";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { getHighResDiscordUrl } from "@/lib/utils";
 
 // Setup filesystem directory
 const METADATA_DIR = path.join(process.cwd(), "src", "data", "metadata");
@@ -175,7 +176,8 @@ export async function POST(
           fileExt = mimeType.split("/")[1] || "jpg";
         } else if (body.image.startsWith("http")) {
           // If it is a Discord CDN avatar or any external URL, download and persist it
-          const fetchRes = await fetch(body.image);
+          const highResUrl = getHighResDiscordUrl(body.image);
+          const fetchRes = await fetch(highResUrl);
           if (fetchRes.ok) {
             const arrayBuffer = await fetchRes.arrayBuffer();
             buffer = Buffer.from(arrayBuffer);
@@ -206,16 +208,18 @@ export async function POST(
             .from("tcg_images")
             .getPublicUrl(storagePath);
 
-          finalBody.image = publicUrl;
-          finalBody.customImage = publicUrl;
+          const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+          finalBody.image = cacheBustedUrl;
+          finalBody.customImage = cacheBustedUrl;
           debugInfo.storageUploadSuccess = true;
-          debugInfo.publicUrl = publicUrl;
+          debugInfo.publicUrl = cacheBustedUrl;
         }
       } catch (uploadErr: any) {
         console.error("Failed to parse/download and upload image to Supabase storage:", uploadErr);
         debugInfo.storageException = uploadErr.message || String(uploadErr);
       }
     }
+
 
     // 2. Sync to Supabase Database (if configured)
     if (isSupabaseConfigured() && supabase) {

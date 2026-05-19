@@ -9,3 +9,18 @@ export const getRoleColors = (role: string) => {
   if (r.includes('bitty')) return ROLE_COLORS.bitty;
   return ROLE_COLORS.ritualist;
 };
+
+export function getHighResDiscordUrl(url: string | null | undefined): string {
+  if (!url) return "";
+  if (url.includes("discordapp.com") || url.includes("discord.com")) {
+    try {
+      const urlObj = new URL(url);
+      urlObj.searchParams.set("size", "1024");
+      return urlObj.toString();
+    } catch (_) {
+      return url;
+    }
+  }
+  return url;
+}
+

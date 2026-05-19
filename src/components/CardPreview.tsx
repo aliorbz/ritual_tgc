@@ -3,6 +3,7 @@
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { ROLE_COLORS } from "@/lib/config";
+import { getHighResDiscordUrl } from "@/lib/utils";
 
 interface CardPreviewProps {
   role: { type: string, name: string };
@@ -25,6 +26,8 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
   const level = stats?.level || "1";
   const activity = stats?.activity || (stats as any)?.activity || "New";
 
+  const highResAvatar = getHighResDiscordUrl(avatar);
+
   return (
     <div className="relative group select-none w-full sm:w-auto">
       {/* Dynamic Glow Aura */}
@@ -46,13 +49,14 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
       >
         {/* Background Card Art (PFP) */}
         <div className="absolute inset-0 z-0 bg-[#0a0a0a]">
-          {avatar ? (
+          {highResAvatar ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img 
-              src={avatar} 
+              src={highResAvatar} 
               alt="Avatar"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
+
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center">
               <span className="text-white/20 text-xs font-mono">No Image</span>

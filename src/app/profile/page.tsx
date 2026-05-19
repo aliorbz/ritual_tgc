@@ -23,6 +23,7 @@ import { Navbar } from "@/components/Navbar";
 import { CardPreview } from "@/components/CardPreview";
 import { getDiscordUserRoles } from "@/lib/actions";
 import { CollectedCards } from "@/components/CollectedCards";
+import { getHighResDiscordUrl } from "@/lib/utils";
 
 // Setup dynamic client for metadata setup
 const RITUAL_CHAIN = {
@@ -44,7 +45,7 @@ export default function ProfilePage() {
   const { isConnected, address } = useAccount();
   const { data: session } = useSession();
   
-  const activeSession = session;
+  const activeSession = session as any;
 
   const [activeTab, setActiveTab] = React.useState("cards");
   const [userData, setUserData] = React.useState<any>(null);
@@ -104,7 +105,7 @@ export default function ProfilePage() {
               tokenId: tokenId.toString(),
               name: activeSession.user?.name || "Ritualist",
               description: `A unique collectible card from the Ritual TCG ecosystem. This card represents your verified role (${userData.role.name}) and contribution to the network.`,
-              image: customImage || activeSession.user?.image || `https://cdn.discordapp.com/embed/avatars/${parseInt(discordId || "0") % 6}.png`,
+              image: customImage || getHighResDiscordUrl(activeSession.user?.image) || `https://cdn.discordapp.com/embed/avatars/${parseInt(discordId || "0") % 6}.png`,
               discordId,
               discordRole: userData.role.name,
               discordUsername: activeSession.user?.name || "user",
