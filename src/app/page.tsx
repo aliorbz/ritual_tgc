@@ -33,7 +33,7 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative w-full pt-44 md:pt-52 lg:pt-36 pb-24 lg:pb-32 flex items-center justify-center z-10">
+      <section className="relative w-full min-h-screen flex items-center justify-center z-10 pt-20">
         {/* Background Glowing Blobs */}
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
         <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
@@ -71,37 +71,28 @@ export default function Home() {
       {/* How it Works / Flow Chart Section */}
       <section className="container mx-auto px-6 py-20 border-t border-white/5 relative z-10 bg-white/[0.01]">
         <div className="text-center mb-16">
-          <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest mb-3 inline-block uppercase font-sans">
-            Quick Start Guide
-          </span>
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">How It Works</h2>
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 max-w-6xl mx-auto relative">
           {[
             {
-              step: "01",
               title: "Authenticate Profile",
               description: "Connect your wallet and authenticate with Discord in seconds.",
-              badge: "Log in using wallet and discord ➔",
               color: "from-blue-500/20 to-blue-600/5",
               glow: "shadow-blue-500/5",
               borderColor: "border-blue-500/20"
             },
             {
-              step: "02",
               title: "Forge Your TCG",
               description: "Instantly fetch your active server role, stats, and mint your card.",
-              badge: "Mint personal TCG ➔",
               color: "from-emerald-500/20 to-emerald-600/5",
               glow: "shadow-emerald-500/5",
               borderColor: "border-emerald-500/20"
             },
             {
-              step: "03",
               title: "Enter the Market",
               description: "List your collectible for sale or make offers on other cards.",
-              badge: "Start trading in Market",
               color: "from-purple-500/20 to-purple-600/5",
               glow: "shadow-purple-500/5",
               borderColor: "border-purple-500/20"
@@ -113,17 +104,8 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.15, duration: 0.6 }}
-                className={`flex-1 w-full p-8 rounded-[32px] bg-gradient-to-br ${feat.color} border ${feat.borderColor} backdrop-blur-xl flex flex-col gap-6 relative shadow-2xl ${feat.glow} group hover:scale-[1.02] transition-all duration-300`}
+                className={`flex-1 w-full p-8 rounded-[32px] bg-gradient-to-br ${feat.color} border ${feat.borderColor} backdrop-blur-xl flex flex-col gap-3 relative shadow-2xl ${feat.glow} group hover:scale-[1.02] transition-all duration-300`}
               >
-                {/* Step indicator */}
-                <div className="absolute top-6 right-8 text-4xl font-mono font-black text-white/5 select-none">
-                  {feat.step}
-                </div>
-
-                <div className="inline-flex max-w-fit px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-wider text-white/70">
-                  {feat.badge}
-                </div>
-
                 <div>
                   <h3 className="text-xl font-black uppercase tracking-tight mb-2 text-white">{feat.title}</h3>
                   <p className="text-white/40 text-sm leading-relaxed font-sans">{feat.description}</p>
