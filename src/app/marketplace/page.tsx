@@ -81,13 +81,14 @@ type MarketCard = {
 };
 
 // ─── Unified Market Card Component ──────────────────────────────────
-function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, currentAddress }: {
+function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, currentAddress, isCompact = false }: {
   card: MarketCard;
   onBuy: (card: MarketCard) => void;
   onOffer: (card: MarketCard) => void;
   onList: (card: MarketCard) => void;
   onCancelListing: (card: MarketCard) => void;
   currentAddress?: string;
+  isCompact?: boolean;
 }) {
   const colors = roleColors(card.cardMeta?.discordRole);
   const isOwner = currentAddress?.toLowerCase() === card.owner.toLowerCase();
@@ -96,10 +97,10 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative group w-full flex justify-start sm:justify-center"
+      className={`relative group w-full flex justify-start ${isCompact ? "" : "sm:justify-center"}`}
     >
       {/* Dynamic Card Display */}
-      <Link href={`/card/${card.tokenId}`} className="block transition-transform duration-500 hover:scale-[1.02] w-full sm:w-auto">
+      <Link href={`/card/${card.tokenId}`} className={`block transition-transform duration-500 hover:scale-[1.02] w-full ${isCompact ? "" : "sm:w-auto"}`}>
         <CardPreview
           tokenId={card.tokenId.toString()}
           role={{ 
@@ -109,14 +110,17 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
           username={card.cardMeta?.discordUsername || "Ritualist"}
           avatar={card.cardMeta?.image || ""}
           stats={card.cardMeta?.traits || { messages: "0", level: "1", activity: "New" }}
+          isCompact={isCompact}
         >
           {/* Custom interactive action buttons directly on card face! */}
-          <div className="space-y-1 sm:space-y-1.5 w-full">
+          <div className={`w-full ${isCompact ? "space-y-1" : "space-y-1 sm:space-y-1.5"}`}>
             {/* Listed Price Badge directly inside card face */}
             {card.isListed && card.price && (
               <div className="text-left pl-1 sm:pl-1.5 mb-0.5 sm:mb-1">
                 <span 
-                  className="text-[14px] xs:text-base sm:text-3xl font-black uppercase tracking-tight text-white font-sans"
+                  className={`font-black uppercase tracking-tight text-white font-sans text-[14px] xs:text-base ${
+                    isCompact ? "" : "sm:text-3xl"
+                  }`}
                   style={{ textShadow: "0 2px 4px rgba(0,0,0,1), 0 4px 12px rgba(0,0,0,1)" }}
                 >
                   {formatEther(card.price)} RITUAL
@@ -132,9 +136,11 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                     e.stopPropagation();
                     onCancelListing(card);
                   }}
-                  className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5"
+                  className={`w-full rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-[8px] xs:text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 py-1.5 ${
+                    isCompact ? "" : "sm:py-2.5 sm:rounded-xl sm:text-[11px] sm:gap-1.5"
+                  }`}
                 >
-                  <Trash2 size={12} className="hidden sm:inline" /> Cancel List
+                  <Trash2 size={isCompact ? 10 : 12} className="hidden sm:inline" /> Cancel List
                 </button>
               ) : (
                 <button
@@ -143,14 +149,16 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                     e.stopPropagation();
                     onList(card);
                   }}
-                  className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:brightness-110"
+                  className={`w-full rounded-lg border text-[8px] xs:text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-all hover:brightness-110 py-1.5 ${
+                    isCompact ? "" : "sm:py-2.5 sm:rounded-xl sm:text-[11px] sm:gap-1.5"
+                  }`}
                   style={{ 
                     borderColor: colors.primary, 
                     backgroundColor: `${colors.primary}1A`, 
                     color: colors.primary 
                   }}
                 >
-                  <Tag size={12} className="hidden sm:inline" /> List Card
+                  <Tag size={isCompact ? 10 : 12} className="hidden sm:inline" /> List Card
                 </button>
               )
             ) : (
@@ -162,7 +170,9 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                       e.stopPropagation();
                       onOffer(card);
                     }}
-                    className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.04] backdrop-blur-md text-white/80 hover:text-white hover:bg-white/[0.08] transition-all text-[8px] xs:text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-lg"
+                    className={`flex-1 rounded-lg border border-white/10 hover:border-white/20 bg-white/[0.04] backdrop-blur-md text-white/80 hover:text-white hover:bg-white/[0.08] transition-all text-[8px] xs:text-[9px] font-black uppercase tracking-wider shadow-lg py-1.5 ${
+                      isCompact ? "" : "sm:py-2.5 sm:rounded-xl sm:text-[10px]"
+                    }`}
                   >
                     Offer
                   </button>
@@ -172,7 +182,9 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                       e.stopPropagation();
                       onBuy(card);
                     }}
-                    className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-black text-[8px] xs:text-[9px] sm:text-[10px] uppercase tracking-wider text-black transition-all hover:brightness-110"
+                    className={`flex-1 rounded-lg font-black text-[8px] xs:text-[9px] uppercase tracking-wider text-black transition-all hover:brightness-110 py-1.5 ${
+                      isCompact ? "" : "sm:py-2.5 sm:rounded-xl sm:text-[10px]"
+                    }`}
                     style={{ 
                       backgroundColor: colors.primary,
                       boxShadow: `0 4px 12px ${colors.glow}`
@@ -188,14 +200,16 @@ function MarketCardItem({ card, onBuy, onOffer, onList, onCancelListing, current
                     e.stopPropagation();
                     onOffer(card);
                   }}
-                  className="w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border text-[8px] xs:text-[9px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:brightness-110"
+                  className={`w-full rounded-lg border text-[8px] xs:text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-all hover:brightness-110 py-1.5 ${
+                    isCompact ? "" : "sm:py-2.5 sm:rounded-xl sm:text-[11px] sm:gap-1.5"
+                  }`}
                   style={{ 
                     borderColor: colors.primary, 
                     backgroundColor: `${colors.primary}1A`, 
                     color: colors.primary 
                   }}
                 >
-                  <Hand size={12} className="hidden sm:inline" /> Make Offer
+                  <Hand size={isCompact ? 10 : 12} className="hidden sm:inline" /> Make Offer
                 </button>
               )
             )}
@@ -864,6 +878,7 @@ export default function MarketplacePage() {
                         onList={setSelectedList}
                         onCancelListing={handleCancelListing}
                         currentAddress={address}
+                        isCompact={gridMode === "compact"}
                       />
                     </div>
                   ))}

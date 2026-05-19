@@ -14,9 +14,10 @@ interface CardPreviewProps {
   tokenId?: string;
   children?: React.ReactNode;
   insideCardPage?: boolean;
+  isCompact?: boolean;
 }
 
-export function CardPreview({ role, username, avatar, stats, walletAddress, tokenId, children, insideCardPage = false }: CardPreviewProps) {
+export function CardPreview({ role, username, avatar, stats, walletAddress, tokenId, children, insideCardPage = false, isCompact = false }: CardPreviewProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const roleType = (role?.type || "ritualist").toLowerCase();
   const colors = (ROLE_COLORS as any)[roleType] || ROLE_COLORS.ritualist;
@@ -30,7 +31,7 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
   const highResAvatar = getHighResDiscordUrl(avatar);
 
   return (
-    <div className="relative group select-none w-full sm:w-auto flex justify-center">
+    <div className={`relative group select-none w-full flex justify-center ${isCompact ? "" : "sm:w-auto"}`}>
       {/* Dynamic Glow Aura */}
       <div 
         className="absolute -inset-1 blur-[35px] rounded-[36px] opacity-20 group-hover:opacity-75 transition-all duration-700 pointer-events-none" 
@@ -44,10 +45,12 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
       <div 
         ref={cardRef}
         id="card-capture-area"
-        className={`relative rounded-2xl sm:rounded-[32px] overflow-hidden bg-[#050505] border-2 shadow-2xl flex flex-col justify-between p-2.5 sm:p-4 transition-transform duration-500 hover:scale-[1.02] border-white/10 ${
+        className={`relative rounded-2xl overflow-hidden bg-[#050505] border-2 shadow-2xl flex flex-col justify-between p-2.5 transition-transform duration-500 hover:scale-[1.02] border-white/10 ${
           insideCardPage 
-            ? "w-[310px] h-[430px] xs:w-[340px] xs:h-[472px] sm:w-[280px] sm:h-[390px]" 
-            : "w-full aspect-[1/1.39] sm:aspect-auto sm:w-[280px] sm:h-[390px]"
+            ? "w-[310px] h-[430px] xs:w-[340px] xs:h-[472px] sm:w-[280px] sm:h-[390px] sm:rounded-[32px] sm:p-4" 
+            : (isCompact 
+                ? "w-full aspect-[1/1.39] sm:w-[185px] sm:h-[258px] sm:rounded-2xl" 
+                : "w-full aspect-[1/1.39] sm:w-[280px] sm:h-[390px] sm:rounded-[32px] sm:p-4 sm:aspect-auto")
         }`}
         style={{ 
           boxShadow: `0 20px 40px -15px ${colors.glow}`,
@@ -96,18 +99,26 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
 
         {/* ── CARD HEADER (Name and NFT ID Badge on face) ── */}
         {!insideCardPage && (
-          <div className="relative z-20 w-full flex items-center justify-between gap-1 sm:gap-2 bg-black/60 backdrop-blur-md py-1.5 px-2 sm:py-2.5 sm:px-3.5 rounded-xl sm:rounded-2xl border border-white/10 shadow-lg">
+          <div className={`relative z-20 w-full flex items-center justify-between gap-1 bg-black/60 backdrop-blur-md py-1.5 px-2 rounded-xl border border-white/10 shadow-lg ${
+            isCompact 
+              ? "" 
+              : "sm:gap-2 sm:py-2.5 sm:px-3.5 sm:rounded-2xl"
+          }`}>
             <div className="text-left min-w-0 flex-1">
               {colors.isGradient ? (
                 <h3 
-                  className="text-[10px] xs:text-xs sm:text-sm font-black font-outfit uppercase tracking-wider truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] bg-clip-text text-transparent bg-gradient-to-r"
+                  className={`font-black font-outfit uppercase tracking-wider truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] bg-clip-text text-transparent bg-gradient-to-r text-[10px] xs:text-xs ${
+                    isCompact ? "" : "sm:text-sm"
+                  }`}
                   style={{ backgroundImage: colors.gradient }}
                 >
                   {username || "Ritualist"}
                 </h3>
               ) : (
                 <h3 
-                  className="text-[10px] xs:text-xs sm:text-sm font-black font-outfit uppercase tracking-wider truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+                  className={`font-black font-outfit uppercase tracking-wider truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] text-[10px] xs:text-xs ${
+                    isCompact ? "" : "sm:text-sm"
+                  }`}
                   style={{ color: colors.primary }}
                 >
                   {username || "Ritualist"}
@@ -116,7 +127,9 @@ export function CardPreview({ role, username, avatar, stats, walletAddress, toke
             </div>
 
             <div 
-              className="px-1.5 py-0.5 rounded sm:rounded-lg border text-[9px] sm:text-xs font-mono font-black flex-shrink-0 flex items-center justify-center bg-black/80 text-white/95"
+              className={`px-1.5 py-0.5 rounded border text-[9px] font-mono font-black flex-shrink-0 flex items-center justify-center bg-black/80 text-white/95 ${
+                isCompact ? "" : "sm:rounded-lg sm:text-xs"
+              }`}
               style={{ 
                 borderColor: colors.isGradient ? "transparent" : colors.primary,
                 background: colors.isGradient 
