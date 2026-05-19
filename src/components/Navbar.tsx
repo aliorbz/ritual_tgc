@@ -51,7 +51,7 @@ export function Navbar() {
         </Link>
 
         {/* Center Navigation Links */}
-        <div className="hidden sm:flex items-center gap-1 sm:gap-2 bg-white/[0.02] border border-white/5 px-3 py-1.5 rounded-full backdrop-blur-md">
+        <div className="flex items-center gap-1 bg-white/[0.02] border border-white/5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full backdrop-blur-md">
           {[
             { label: "Home", href: "/" },
             { label: "Market", href: "/marketplace" },
@@ -62,7 +62,7 @@ export function Navbar() {
               <Link 
                 key={item.label}
                 href={item.href}
-                className="relative text-[10px] font-black uppercase tracking-wider transition-all px-3 py-1.5 rounded-full select-none"
+                className="relative text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full select-none"
               >
                 <span className={`relative z-10 transition-colors duration-300 ${isActive ? "text-white" : "text-white/40 hover:text-white"}`}>
                   {item.label}
@@ -126,6 +126,21 @@ export function Navbar() {
                           <div className="overflow-hidden">
                             <p className="text-xs font-black truncate text-white uppercase tracking-tight leading-none">{session.user.name}</p>
                             <p className="text-[9px] font-bold text-emerald-400 tracking-widest uppercase mt-1">Discord synced</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Mobile Wallet & Balance Section */}
+                      {isConnected && (
+                        <div className="md:hidden px-4 py-3 border-b border-white/5 mb-1.5 bg-white/[0.02] rounded-xl">
+                          <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest mb-1.5">Wallet Connection</p>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-mono text-white/60 tracking-wider">
+                              {address?.slice(0, 6)}...{address?.slice(-4)}
+                            </span>
+                            <span className="text-[10px] font-black font-mono text-emerald-400">
+                              {isBalanceLoading ? "..." : `${readableBalance} RITUAL`}
+                            </span>
                           </div>
                         </div>
                       )}

@@ -722,24 +722,22 @@ export default function MarketplacePage() {
       <Navbar />
       <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-28 pb-20">
         {/* Header */}
-        <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="mb-12 flex items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-4 sm:gap-6">
-              <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black uppercase tracking-tighter text-white">Marketplace</h1>
-              {!isLoading && (
-                <div 
-                  className="w-9 h-9 sm:w-14 sm:h-14 rounded-full border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center font-black text-sm sm:text-xl text-emerald-400 shadow-lg shadow-emerald-500/5 animate-pulse"
-                >
-                  {totalMinted}
-                </div>
-              )}
-            </div>
+            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black uppercase tracking-tighter text-white">Marketplace</h1>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-[11px] font-bold text-white/30 uppercase tracking-widest font-sans">
               <span>5% Royalty fee</span>
               <span>·</span>
               <span>Secure Escrow Bids</span>
             </div>
           </div>
+          {!isLoading && (
+            <div 
+              className="w-9 h-9 sm:w-14 sm:h-14 rounded-full border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center font-black text-sm sm:text-xl text-emerald-400 shadow-lg shadow-emerald-500/5 animate-pulse flex-shrink-0"
+            >
+              {totalMinted}
+            </div>
+          )}
         </div>
 
         {/* Dynamic Search and Filter Controls Panel */}
