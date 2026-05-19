@@ -37,11 +37,11 @@ export function Navbar() {
           WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0) 100%)"
         }}
       />
-      <div className="container mx-auto px-6 h-20 flex items-center justify-between relative z-10">
-        <Link href="/" className="flex items-center gap-3 group">
+      <div className="container mx-auto px-3 sm:px-6 h-20 flex items-center justify-between relative z-10">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
           <motion.div 
             whileHover={{ rotate: 10, scale: 1.05 }}
-            className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center font-black text-xl shadow-xl shadow-emerald-500/10 overflow-hidden"
+            className="w-9 h-9 sm:w-12 sm:h-12 bg-black rounded-xl sm:rounded-2xl flex items-center justify-center font-black text-xl shadow-xl shadow-emerald-500/10 overflow-hidden"
           >
             <img src="/ritual.jpg" alt="Ritual Logo" className="w-full h-full object-cover" />
           </motion.div>
@@ -88,7 +88,64 @@ export function Navbar() {
               </span>
             </div>
           )}
-          <ConnectButton showBalance={false} chainStatus="none" accountStatus="address" />
+          <ConnectButton.Custom>
+            {({
+              account,
+              chain,
+              openAccountModal,
+              openConnectModal,
+              mounted,
+            }) => {
+              const ready = mounted;
+              const connected = ready && account && chain;
+
+              return (
+                <div
+                  {...(!ready && {
+                    'aria-hidden': true,
+                    className: "opacity-0 pointer-events-none select-none",
+                  })}
+                >
+                  {(() => {
+                    if (!connected) {
+                      return (
+                        <button
+                          onClick={openConnectModal}
+                          type="button"
+                          className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-black uppercase tracking-wider bg-white text-black hover:bg-white/90 rounded-xl transition-all shadow-md active:scale-95 flex-shrink-0"
+                        >
+                          <span className="sm:hidden">Connect</span>
+                          <span className="hidden sm:inline">Connect Wallet</span>
+                        </button>
+                      );
+                    }
+
+                    if (chain.unsupported) {
+                      return (
+                        <button
+                          onClick={openAccountModal}
+                          type="button"
+                          className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-black uppercase tracking-wider bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl transition-all flex-shrink-0"
+                        >
+                          Wrong Network
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <button
+                        onClick={openAccountModal}
+                        type="button"
+                        className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-black font-mono tracking-wider bg-white/5 border border-white/10 hover:bg-white/10 text-white/90 rounded-xl transition-all flex-shrink-0"
+                      >
+                        {account.displayName}
+                      </button>
+                    );
+                  })()}
+                </div>
+              );
+            }}
+          </ConnectButton.Custom>
           
           {isConnected && (
             <div className="relative">

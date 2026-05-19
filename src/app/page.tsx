@@ -38,7 +38,7 @@ export default function Home() {
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
         <div className="absolute top-1/3 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-600/10 blur-[150px] rounded-full pointer-events-none z-0" />
 
-        <div className="container mx-auto px-6 relative z-10 text-center max-w-4xl">
+        <div className="container mx-auto px-6 relative z-10 text-center max-w-4xl -translate-y-8 lg:translate-y-0">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
