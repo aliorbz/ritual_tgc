@@ -451,7 +451,7 @@ export default function MarketplacePage() {
   // Search & Filter controls
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
-  const [sort, setSort] = useState("recent");
+  const [sort, setSort] = useState("price_asc");
   const [placeholderText, setPlaceholderText] = useState("Search...");
 
   useEffect(() => {
@@ -747,7 +747,7 @@ export default function MarketplacePage() {
           </div>
           {!isLoading && (
             <div 
-              className="w-9 h-9 sm:w-14 sm:h-14 rounded-full border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center font-black text-sm sm:text-xl text-emerald-400 shadow-lg shadow-emerald-500/5 animate-pulse flex-shrink-0"
+              className="w-9 h-9 sm:w-14 sm:h-14 rounded-full border border-white/20 bg-white/5 flex items-center justify-center font-black text-sm sm:text-xl text-white shadow-lg shadow-white/5 animate-pulse flex-shrink-0"
             >
               {totalMinted}
             </div>
