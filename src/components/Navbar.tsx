@@ -9,12 +9,14 @@ import { useSession, signOut } from "next-auth/react";
 import { User, LogOut, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RITUAL_NETWORK } from "@/lib/config";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
   const { isConnected, address } = useAccount();
   const { disconnect } = useDisconnect();
   const { data: session } = useSession();
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const pathname = usePathname();
 
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance({
     address: address,
@@ -47,6 +49,35 @@ export function Navbar() {
             Ritual <span className="text-emerald-500">TCG</span>
           </span>
         </Link>
+
+        {/* Center Navigation Links */}
+        <div className="hidden sm:flex items-center gap-1 sm:gap-2 bg-white/[0.02] border border-white/5 px-3 py-1.5 rounded-full backdrop-blur-md">
+          {[
+            { label: "Home", href: "/" },
+            { label: "Market", href: "/marketplace" },
+            { label: "Mint", href: "/profile?tab=create" },
+          ].map((item) => {
+            const isActive = pathname === item.href.split("?")[0];
+            return (
+              <Link 
+                key={item.label}
+                href={item.href}
+                className="relative text-[10px] font-black uppercase tracking-wider transition-all px-3 py-1.5 rounded-full select-none"
+              >
+                <span className={`relative z-10 transition-colors duration-300 ${isActive ? "text-white" : "text-white/40 hover:text-white"}`}>
+                  {item.label}
+                </span>
+                {isActive && (
+                  <motion.div 
+                    layoutId="navTabLine" 
+                    className="absolute inset-0 bg-white/10 rounded-full border border-white/10 shadow-md"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </div>
 
         <div className="flex items-center gap-3">
           {isConnected && (

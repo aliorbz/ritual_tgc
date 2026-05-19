@@ -49,6 +49,25 @@ function getClient() {
   return createPublicClient({ chain: RITUAL_CHAIN as any, transport: http() });
 }
 
+const VerifiedRosette = ({ size = 28, color = "currentColor" }: { size?: number; color?: string }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2.5" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path 
+      d="M12 2L14.4 4.5L17.8 4L18.3 7.4L21.5 8.9L20.2 12.1L22.2 15L19.4 17L18.7 20.3L15.3 19.9L13 22.4L10 20.7L6.7 21.1L6 17.8L3 16.3L4.3 13L2.3 10L5.1 8L5.8 4.7L9.2 5.1L11.5 2.6L12 2Z" 
+      fill={`${color}15`}
+    />
+    <path d="M9 12L11 14L15 9" strokeWidth="3" />
+  </svg>
+);
+
 function roleColors(role?: string) {
   const roleType = (role || "ritualist").toLowerCase();
   return (ROLE_COLORS as any)[roleType] || ROLE_COLORS.ritualist;
@@ -514,6 +533,23 @@ export default function CardDetails() {
 
   return (
     <main className="min-h-screen bg-[#121212] text-white font-['Outfit',sans-serif]">
+      <style>{`
+        @keyframes badge-glow {
+          0%, 100% {
+            box-shadow: 0 0 8px var(--glow-color), inset 0 0 4px var(--glow-color);
+            filter: drop-shadow(0 0 2px var(--glow-color));
+            opacity: 0.8;
+          }
+          50% {
+            box-shadow: 0 0 24px var(--glow-color), inset 0 0 10px var(--glow-color);
+            filter: drop-shadow(0 0 12px var(--glow-color));
+            opacity: 1;
+          }
+        }
+        .animate-badge-glow {
+          animation: badge-glow 2.5s infinite ease-in-out;
+        }
+      `}</style>
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-6 pt-28 pb-20">
@@ -612,24 +648,28 @@ export default function CardDetails() {
 
                     {/* Verified Badge */}
                     {metadata?.discordRole && (
-                      <div 
-                        className="px-4 py-2 rounded-full border text-xs font-black uppercase tracking-wider select-none font-sans flex items-center gap-1.5"
-                        style={{
-                          borderColor: colors.isGradient ? "transparent" : colors.primary,
-                          background: colors.isGradient 
-                            ? `linear-gradient(#121212, #121212) padding-box, ${colors.gradient} border-box` 
-                            : `${colors.primary}10`,
-                          border: colors.isGradient ? "1.5px transparent solid" : undefined,
-                          boxShadow: `0 0 16px ${colors.glow}`
-                        }}
-                      >
-                        <ShieldCheck size={14} style={{ color: colors.isGradient ? "#bae6fd" : colors.primary }} />
-                        <span 
-                          className={colors.isGradient ? "bg-clip-text text-transparent bg-gradient-to-r" : ""}
-                          style={colors.isGradient ? { backgroundImage: colors.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } : { color: colors.primary, textShadow: `0 0 8px ${colors.glow}` }}
+                      <div className="relative group/tooltip">
+                        <div 
+                          className="w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 animate-badge-glow"
+                          style={{
+                            borderColor: colors.isGradient ? "transparent" : colors.primary,
+                            background: colors.isGradient 
+                              ? `linear-gradient(#121212, #121212) padding-box, ${colors.gradient} border-box` 
+                              : `${colors.primary}10`,
+                            border: "2px solid transparent",
+                            '--glow-color': colors.isGradient ? "#bae6fd" : colors.primary
+                          } as any}
                         >
-                          {metadata.discordRole}
-                        </span>
+                          <VerifiedRosette size={22} color={colors.isGradient ? "#bae6fd" : colors.primary} />
+                        </div>
+                        
+                        {/* Tooltip Content */}
+                        <div className="absolute bottom-full mb-3 right-1/2 translate-x-1/2 pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-all duration-300 transform translate-y-1 group-hover/tooltip:translate-y-0 z-50">
+                          <div className="bg-[#181818] border border-white/10 text-white text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-xl shadow-2xl whitespace-nowrap">
+                            {metadata.discordRole}
+                          </div>
+                          <div className="w-2.5 h-2.5 bg-[#181818] border-r border-b border-white/10 rotate-45 mx-auto -mt-1.5" />
+                        </div>
                       </div>
                     )}
                   </div>
