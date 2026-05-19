@@ -453,6 +453,7 @@ export default function MarketplacePage() {
   const [filter, setFilter] = useState("All");
   const [sort, setSort] = useState("price_asc");
   const [placeholderText, setPlaceholderText] = useState("Search...");
+  const [gridMode, setGridMode] = useState<"standard" | "compact">("standard");
 
   useEffect(() => {
     const handleResize = () => {
@@ -745,13 +746,6 @@ export default function MarketplacePage() {
               <span>Secure Escrow Bids</span>
             </div>
           </div>
-          {!isLoading && (
-            <div 
-              className="w-9 h-9 sm:w-14 sm:h-14 rounded-full border border-white/20 bg-white/5 flex items-center justify-center font-black text-sm sm:text-xl text-white shadow-lg shadow-white/5 animate-pulse flex-shrink-0"
-            >
-              {totalMinted}
-            </div>
-          )}
         </div>
 
         {/* Dynamic Search and Filter Controls Panel */}
@@ -788,6 +782,52 @@ export default function MarketplacePage() {
                 ))}
               </select>
             </div>
+
+            {/* Grid Toggle Selection: Hidden on Mobile */}
+            <div className="hidden sm:flex items-center gap-1 border-l border-white/10 pl-3 sm:pl-4 flex-shrink-0">
+              {/* Coarse/Standard Grid (2x2 structure) */}
+              <button
+                onClick={() => setGridMode("standard")}
+                type="button"
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                  gridMode === "standard" 
+                    ? "bg-white/10 border border-white/20 text-white" 
+                    : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
+                }`}
+                title="Standard Grid"
+              >
+                <div className="grid grid-cols-2 gap-[2px] w-3.5 h-3.5">
+                  <div className="w-[5px] h-[5px] border-[1.5px] border-current rounded-[1px]" />
+                  <div className="w-[5px] h-[5px] border-[1.5px] border-current rounded-[1px]" />
+                  <div className="w-[5px] h-[5px] border-[1.5px] border-current rounded-[1px]" />
+                  <div className="w-[5px] h-[5px] border-[1.5px] border-current rounded-[1px]" />
+                </div>
+              </button>
+
+              {/* Compact/Dense Grid (3x3 structure) */}
+              <button
+                onClick={() => setGridMode("compact")}
+                type="button"
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                  gridMode === "compact" 
+                    ? "bg-white/10 border border-white/20 text-white" 
+                    : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
+                }`}
+                title="Compact Grid"
+              >
+                <div className="grid grid-cols-3 gap-[2px] w-4 h-4">
+                  <div className="w-[3.5px] h-[3.5px] border-[1.5px] border-current rounded-[0.5px]" />
+                  <div className="w-[3.5px] h-[3.5px] border-[1.5px] border-current rounded-[0.5px]" />
+                  <div className="w-[3.5px] h-[3.5px] border-[1.5px] border-current rounded-[0.5px]" />
+                  <div className="w-[3.5px] h-[3.5px] border-[1.5px] border-current rounded-[0.5px]" />
+                  <div className="w-[3.5px] h-[3.5px] border-[1.5px] border-current rounded-[0.5px]" />
+                  <div className="w-[3.5px] h-[3.5px] border-[1.5px] border-current rounded-[0.5px]" />
+                  <div className="w-[3.5px] h-[3.5px] border-[1.5px] border-current rounded-[0.5px]" />
+                  <div className="w-[3.5px] h-[3.5px] border-[1.5px] border-current rounded-[0.5px]" />
+                  <div className="w-[3.5px] h-[3.5px] border-[1.5px] border-current rounded-[0.5px]" />
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -807,7 +847,11 @@ export default function MarketplacePage() {
           <div className="space-y-16">
 
               {filteredCards.length > 0 ? (
-                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8 justify-items-start">
+                <div className={
+                  gridMode === "standard" 
+                    ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8 justify-items-start"
+                    : "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-4 justify-items-start"
+                }>
                   {filteredCards.map((card) => (
                     <div 
                       key={`${card.isListed ? "listed" : "unlisted"}-${card.tokenId.toString()}`}
